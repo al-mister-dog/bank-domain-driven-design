@@ -4,8 +4,7 @@ export class Bank implements IBank {
   constructor(
     public id: string,
     public assets: Category,
-    public liabilities: Category,
-    public reserves: number
+    public liabilities: Category
   ) {}
   createAccount(
     id: string,
@@ -81,8 +80,6 @@ export class Bank implements IBank {
       b1.minusFromAccount(b2.id, category, instrument, amount);
     }
   }
-
-
 }
 
 export class CommercialBank extends Bank {
@@ -92,7 +89,13 @@ export class CommercialBank extends Bank {
     public liabilities: Category,
     public reserves: number = 0
   ) {
-    super(id, assets, liabilities, reserves);
+    super(id, assets, liabilities);
+  }
+  deposit(amount: number) {
+    this.reserves += amount;
+  }
+  withdraw(amount: number) {
+    this.reserves -= amount;
   }
 }
 
@@ -103,7 +106,7 @@ export class CorrespondentBank extends Bank {
     public liabilities: Category,
     public reserves: number = 0
   ) {
-    super(id, assets, liabilities, reserves);
+    super(id, assets, liabilities);
   }
   static creditAccount(
     b1: Bank,
@@ -131,5 +134,32 @@ export class CorrespondentBank extends Bank {
     b1.createAccount(b2.id, "liabilities", instrument, amount);
     b2.createAccount(b1.id, "assets", instrument, amount);
     b2.createAccount(b1.id, "liabilities", instrument, amount);
+  }
+}
+
+export class Customer extends Bank {
+  constructor(
+    public id: string,
+    public assets: Category,
+    public liabilities: Category,
+    public cash: number = 0
+  ) {
+    super(id, assets, liabilities);
+  }
+  deposit(amount: number) {
+    this.cash -= amount;
+  }
+  withdraw(amount: number) {
+    this.cash += amount;
+  }
+  static makeDeposit(c1: Customer, b1: CommercialBank, amount: number) {
+    Bank.transferDeposit(c1, b1, 150, "customerDeposits", true);
+    c1.deposit(amount);
+    b1.deposit(amount);
+  }
+  static makeWithdrawal(c1: Customer, b1: CommercialBank, amount: number) {
+    Bank.transferDeposit(c1, b1, 150, "customerDeposits", false);
+    c1.withdraw(amount);
+    b1.withdraw(amount);
   }
 }

@@ -25,7 +25,7 @@ export interface IBank {
   id: string;
   assets: Category;
   liabilities: Category;
-  reserves: number;
+  // reserves: number;
 }
 
 export type CategoryKey = keyof CategoryTypes;
