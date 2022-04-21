@@ -1,0 +1,23 @@
+interbank transfers
+
+1
+a customer may have more than one bank account
+this is a future eventuality to prepare for
+
+when customerA makes a transfer to customerB, customerB's bank account of 
+choice must be specified.
+
+what is a good way of doing this?
+establish a payee account between customers.
+
+whenever transaction function occurs, chosen banks will appear in parameters
+
+Bank.interbank(a, b, amount, shareFunc())
+
+2
+
+
+
+c1 > c2 (amount)
+c1 decreaseBalance/mapBalance
+c2 increaseBalance/mapBalance

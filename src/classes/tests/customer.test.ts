@@ -15,15 +15,15 @@ describe("balances", () => {
       amount: 0,
     });
     expect(barclays.balances.customerDeposits[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 0,
     });
     expect(barclays.assets.customerOverdrafts[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 0,
     });
     expect(barclays.liabilities.customerDeposits[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 0,
     });
   });
@@ -47,11 +47,11 @@ describe("balances", () => {
     Customer.createCustomerAccount(johnDoe, barclays, 0, "customerDeposits", "customerOverdrafts");
     Customer.makeDeposit(johnDoe, barclays, 100);
     expect(barclays.balances.customerDeposits[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 100,
     });
     expect(barclays.liabilities.customerDeposits[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 100,
     });
   });
@@ -61,7 +61,7 @@ describe("balances", () => {
     Customer.createCustomerAccount(johnDoe, barclays, 0, "customerDeposits", "customerOverdrafts");
     Customer.makeDeposit(johnDoe, barclays, 100)
     expect(barclays.balances.customerDeposits[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 100
     })
     expect(johnDoe.assets.customerDeposits[1]).toEqual({
@@ -74,11 +74,11 @@ describe("balances", () => {
     Customer.createCustomerAccount(johnDoe, barclays, 0, "customerDeposits", "customerOverdrafts");
     Customer.makeDeposit(johnDoe, barclays, 100)
     expect(barclays.balances.customerDeposits[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 100
     })
     expect(barclays.liabilities.customerDeposits[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 100
     })
   })
@@ -87,7 +87,7 @@ describe("balances", () => {
     Customer.createCustomerAccount(johnDoe, barclays, 0, "customerDeposits", "customerOverdrafts");
     Customer.makeWithdrawal(johnDoe, barclays, 100);
     expect(barclays.balances.customerDeposits[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: -100
     })
     expect(johnDoe.liabilities.customerOverdrafts[1]).toEqual({
@@ -100,11 +100,11 @@ describe("balances", () => {
     Customer.createCustomerAccount(johnDoe, barclays, 0, "customerDeposits", "customerOverdrafts");
     Customer.makeWithdrawal(johnDoe, barclays, 100)
     expect(barclays.balances.customerDeposits[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: -100
     })
     expect(barclays.assets.customerOverdrafts[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 100
     })
   })
@@ -114,7 +114,7 @@ describe("balances", () => {
     Customer.createCustomerAccount(johnDoe, barclays, 0, "customerDeposits", "customerOverdrafts");
     Customer.makeDeposit(johnDoe, barclays, 100)
     expect(barclays.balances.customerDeposits[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 100
     })
     expect(johnDoe.assets.customerDeposits[1]).toEqual({
@@ -126,17 +126,17 @@ describe("balances", () => {
       amount: 0
     })
     expect(barclays.liabilities.customerDeposits[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 100
     })
     expect(barclays.assets.customerOverdrafts[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 0
     })
 
     Customer.makeWithdrawal(johnDoe, barclays, 100)
     expect(barclays.balances.customerDeposits[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 0
     })
     expect(johnDoe.assets.customerDeposits[1]).toEqual({
@@ -148,17 +148,17 @@ describe("balances", () => {
       amount: 0
     })
     expect(barclays.liabilities.customerDeposits[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 0
     })
     expect(barclays.assets.customerOverdrafts[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 0
     })
 
     Customer.makeWithdrawal(johnDoe, barclays, 100)
     expect(barclays.balances.customerDeposits[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: -100
     })
     expect(johnDoe.assets.customerDeposits[1]).toEqual({
@@ -170,11 +170,11 @@ describe("balances", () => {
       amount: 100
     })
     expect(barclays.liabilities.customerDeposits[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 0
     })
     expect(barclays.assets.customerOverdrafts[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 100
     })
 
@@ -198,15 +198,15 @@ describe("balances", () => {
       amount: 100
     })
     expect(barclays.balances.customerDeposits[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: -100
     })
     expect(barclays.liabilities.customerDeposits[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 0
     })
     expect(barclays.assets.customerOverdrafts[1]).toEqual({
-      id: "JOHN DOE",
+      id: "JOHN_DOE",
       amount: 100
     })
   })

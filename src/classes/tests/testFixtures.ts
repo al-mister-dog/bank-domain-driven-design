@@ -12,6 +12,7 @@ type Banks2 = {
   johnDoe: Customer;
 };
 type Banks3 = {
+  hsbc: CommercialBank;
   barclays: CommercialBank;
   johnDoe: Customer;
   janeDoe: Customer;
@@ -57,7 +58,7 @@ export function createCommercialBanks(): Banks2 {
     { ...balances },
   );
   const johnDoe = new Customer(
-    "JOHN DOE",
+    "JOHN_DOE",
     { customerDeposits: [{ id: "ID", amount: 0 }] },
     { customerOverdrafts: [{ id: "ID", amount: 0 }] },
     { ...balances },
@@ -70,6 +71,12 @@ export function createCommercialBanks(): Banks2 {
 }
 
 export function createInterBank(): Banks3 {
+  const hsbc = new CommercialBank(
+    "HSBC",
+    { ...commercialAssets },
+    { ...commercialLiabilities },
+    { ...balances },
+  );
   const barclays = new CommercialBank(
     "BARCLAYS",
     { ...commercialAssets },
@@ -77,18 +84,19 @@ export function createInterBank(): Banks3 {
     { ...balances },
   );
   const johnDoe = new Customer(
-    "JOHN DOE",
+    "JOHN_DOE",
     { customerDeposits: [{ id: "ID", amount: 0 }] },
     { customerOverdrafts: [{ id: "ID", amount: 0 }] },
     { ...balances },
   );
   const janeDoe = new Customer(
-    "JANE DOE",
+    "JANE_DOE",
     { customerDeposits: [{ id: "ID", amount: 0 }] },
     { customerOverdrafts: [{ id: "ID", amount: 0 }] },
     { ...balances },
   );
   return {
+    hsbc,
     barclays,
     johnDoe,
     janeDoe,

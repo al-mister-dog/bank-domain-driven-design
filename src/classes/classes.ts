@@ -1,5 +1,11 @@
 import { Account, Category, CategoryKey, InstrumentKey, IBank } from "./types";
-const banks = []
+interface ILookup {
+  [key: string]: CommercialBank
+}
+const lookupTable: ILookup = {
+
+}
+
 export class Bank implements IBank {
   constructor(
     public id: string,
@@ -99,7 +105,7 @@ export class Bank implements IBank {
     creditInstrument: InstrumentKey,
     debtInstrument: InstrumentKey
   ) {
-    Bank.createAccount(a, b, amount, creditInstrument, debtInstrument);
+    this.createAccount(a, b, amount, creditInstrument, debtInstrument);
     b.createInstrumentAccount(a.id, "balances", creditInstrument, amount);
   }
 
@@ -110,8 +116,8 @@ export class Bank implements IBank {
     creditInstrument: InstrumentKey,
     debtInstrument: InstrumentKey
   ) {
-    Bank.createAccount(a, b, amount, creditInstrument, debtInstrument);
-    Bank.createAccount(b, a, amount, creditInstrument, debtInstrument);
+    this.createAccount(a, b, amount, creditInstrument, debtInstrument);
+    this.createAccount(b, a, amount, creditInstrument, debtInstrument);
     a.createInstrumentAccount(b.id, "balances", creditInstrument, amount);
     b.createInstrumentAccount(a.id, "balances", creditInstrument, amount);
   }
@@ -184,23 +190,55 @@ export class Customer extends Bank {
   }
   static makeDeposit(a: Customer, b: CommercialBank, amount: number) {
     if (!a.hasReserves(amount)) {
-      console.log(`${a.id} has insufficient funds to make deposit`)
+      // console.log(`${a.id} has insufficient funds to make deposit`)
     }
+    this.creditAccount(a, b, amount)
+  }
+  static makeWithdrawal(a: Customer, b: CommercialBank, amount: number) {
+    if (!b.hasReserves(amount)) {
+      // console.log(`${b.id} has insufficient funds to make deposit`)
+    }
+    this.debitAccount(a, b, amount)
+  }
+
+  static creditAccount(a: Customer, b: CommercialBank, amount: number) {
     a.decreaseReserves(amount);
     b.increaseReserves(amount);
     b.increaseBalance(a.id, amount, "customerDeposits");
     Bank.mapBalance(a, b, "customerDeposits", "customerOverdrafts");
   }
-  static makeWithdrawal(a: Customer, b: CommercialBank, amount: number) {
-    if (!b.hasReserves(amount)) {
-      console.log(`${b.id} has insufficient funds to make deposit`)
-    }
+  static debitAccount(a: Customer, b: CommercialBank, amount: number) {
     a.increaseReserves(amount);
     b.decreaseReserves(amount);
     b.decreaseBalance(a.id, amount, "customerDeposits");
     Bank.mapBalance(a, b, "customerDeposits", "customerOverdrafts");
   }
 
+  static giveDetails(a: Customer, b: Customer, bank: CommercialBank) {
+    lookupTable[`${a.id}${b.id}`] = bank
+  }
+  static shareDetails(a: Customer, b: Customer, bank: CommercialBank) {
+    lookupTable[`${a.id}${b.id}`] = bank
+    lookupTable[`${b.id}${a.id}`] = bank
+  }
+  static transfer(a: Customer, b: Customer, amount: number) {
+    const bank = lookupTable[`${a.id}${b.id}`]
+    this.debitAccount(a, bank, amount)
+    this.creditAccount(b, bank, amount)
+  }
+  static interTransfer(a: Customer, b: Customer, amount: number) {
+    const bankA = lookupTable[`${a.id}${b.id}`]
+    const bankB = lookupTable[`${b.id}${a.id}`]
+    console.log(bankA.id)
+    console.log(bankB.id)
+    this.debitAccount(a, bankA, amount)
+    this.creditAccount(b, bankB, amount)
+  }
 }
 
 //TODO: MAKE THE NEGATIVE FUNCTION DYNAMIC
+export class Systems {
+  shareAccountDetails() {
+
+  }
+}
