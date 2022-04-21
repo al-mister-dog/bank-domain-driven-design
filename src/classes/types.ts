@@ -12,10 +12,12 @@ export type Instrument = Account[];
 export interface CategoryTypes {
   assets: Instrument;
   liabilities: Instrument;
+  balances: Instrument;
 }
 
 export interface InstrumentTypes {
   bankDeposits: Account[];
+  bankOverdrafts: Account[];
   bankLoans: Account[];
   customerOverdrafts: Account[];
   customerDeposits: Account[];

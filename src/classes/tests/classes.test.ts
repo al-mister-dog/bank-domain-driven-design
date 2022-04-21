@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom";
-import {createCorrespondentBanks} from './fixtures'
+import {createCorrespondentBanks} from './fixtures2'
 
 
 describe("parent class instance", () => {
@@ -9,6 +9,7 @@ describe("parent class instance", () => {
       "id",
       "assets",
       "liabilities",
+      "balances",
       "reserves",
     ]);
   });

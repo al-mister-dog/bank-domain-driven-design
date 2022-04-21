@@ -1,4 +1,4 @@
-import { Bank, CommercialBank, CorrespondentBank, Customer } from "../classes";
+import { Bank, CommercialBank, CorrespondentBank, Customer } from "../newClasses";
 import { commercialAssets, commercialLiabilities, balances } from "../fixtures";
 
 type Banks1 = {
