@@ -1,4 +1,4 @@
-import { Bank, CommercialBank, CorrespondentBank, Customer } from "../classes2";
+import { Bank, CommercialBank, CorrespondentBank, Customer } from "../classes";
 import { commercialAssets, commercialLiabilities, balances } from "../fixtures";
 
 type Banks1 = {
@@ -10,6 +10,11 @@ type Banks2 = {
   hsbc: CommercialBank;
   barclays: CommercialBank;
   johnDoe: Customer;
+};
+type Banks3 = {
+  barclays: CommercialBank;
+  johnDoe: Customer;
+  janeDoe: Customer;
 };
 export function createCorrespondentBanks(): Banks1 {
   const newBank = new CommercialBank(
@@ -61,5 +66,31 @@ export function createCommercialBanks(): Banks2 {
     hsbc,
     barclays,
     johnDoe,
+  };
+}
+
+export function createInterBank(): Banks3 {
+  const barclays = new CommercialBank(
+    "BARCLAYS",
+    { ...commercialAssets },
+    { ...commercialLiabilities },
+    { ...balances },
+  );
+  const johnDoe = new Customer(
+    "JOHN DOE",
+    { customerDeposits: [{ id: "ID", amount: 0 }] },
+    { customerOverdrafts: [{ id: "ID", amount: 0 }] },
+    { ...balances },
+  );
+  const janeDoe = new Customer(
+    "JANE DOE",
+    { customerDeposits: [{ id: "ID", amount: 0 }] },
+    { customerOverdrafts: [{ id: "ID", amount: 0 }] },
+    { ...balances },
+  );
+  return {
+    barclays,
+    johnDoe,
+    janeDoe,
   };
 }

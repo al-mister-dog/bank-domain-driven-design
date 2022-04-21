@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom";
-import {createCorrespondentBanks} from './fixtures2'
+import {createCorrespondentBanks} from './testFixtures'
 
 
 describe("parent class instance", () => {

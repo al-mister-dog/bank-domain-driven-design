@@ -1,276 +1,206 @@
-// import { Account, Category, CategoryKey, InstrumentKey, IBank } from "./types";
+import { Account, Category, CategoryKey, InstrumentKey, IBank } from "./types";
+const banks = []
+export class Bank implements IBank {
+  constructor(
+    public id: string,
+    public assets: Category,
+    public liabilities: Category,
+    public balances: Category,
+    public reserves: number
+  ) {}
+  createInstrumentAccount(
+    id: string,
+    category: CategoryKey,
+    instrument: InstrumentKey,
+    amount: number = 0
+  ): void {
+    // if (!this[category][instrument]) {
+    //   return;
+    // }
+    this[category][instrument] = [
+      ...this[category][instrument],
+      { id, amount },
+    ];
+  }
 
-// export class Bank implements IBank {
-//   constructor(
-//     public id: string,
-//     public assets: Category,
-//     public liabilities: Category,
-//     public balances: Category
-//   ) {}
-//   createAccount(
-//     id: string,
-//     category: CategoryKey,
-//     instrument: InstrumentKey,
-//     amount: number = 0
-//   ) {
-//     if (!this[category][instrument]) {
-//       return;
-//     }
-//     this[category][instrument] = [
-//       ...this[category][instrument],
-//       { id, amount },
-//     ];
-//   }
-//   createAccountTest(
-//     b1: Bank,
-//     b2: Bank,
-//     category: CategoryKey,
-//     instrument: InstrumentKey,
-//     amount: number = 0
-//   ) {
-//     let accountId = `${b1.id}w/${b2.id}`;
-//     if (!this[category][instrument]) {
-//       return;
-//     }
-//     this[category][instrument] = [
-//       ...this[category][instrument],
-//       { id: accountId, amount },
-//     ];
-//   }
-//   findAccount(id: string, category: CategoryKey, instrument: InstrumentKey) {
-//     let account = this[category][instrument].find(
-//       (acc: Account) => acc.id === id
-//     );
-//     return account ? true : false;
-//   }
-//   findAccountIndex(
-//     id: string,
-//     category: CategoryKey,
-//     instrument: InstrumentKey
-//   ) {
-//     const index = this[category][instrument].findIndex((acc: Account) => {
-//       return acc.id === id;
-//     });
-//     return index;
-//   }
-//   addToAccount(
-//     id: string,
-//     category: CategoryKey,
-//     instrument: InstrumentKey,
-//     amount: number
-//   ) {
-//     const index = this.findAccountIndex(id, category, instrument);
-//     this[category][instrument][index].amount += amount;
-//   }
-//   minusFromAccount(
-//     id: string,
-//     category: CategoryKey,
-//     instrument: InstrumentKey,
-//     amount: number
-//   ) {
-//     const index = this.findAccountIndex(id, category, instrument);
-//     this[category][instrument][index].amount -= amount;
-//   }
+  findAccount(id: string, category: CategoryKey, instrument: InstrumentKey) {
+    let account = this[category][instrument].find(
+      (acc: Account) => acc.id === id
+    );
+    return account ? true : false;
+  }
 
-//   static transferDeposit(
-//     b1: Bank,
-//     b2: Bank,
-//     amount: number,
-//     instrument: InstrumentKey,
-//     credit: boolean
-//   ) {
-//     Bank.handleTransfer(b1, b2, "assets", instrument, amount, credit);
-//     Bank.handleTransfer(b2, b1, "liabilities", instrument, amount, credit);
-//   }
-//   static handleTransfer(
-//     b1: Bank,
-//     b2: Bank,
-//     category: CategoryKey,
-//     instrument: InstrumentKey,
-//     amount: number,
-//     credit: boolean
-//   ) {
-//     if (!b1.findAccount(b2.id, category, instrument)) {
-//       b1.createAccount(b2.id, category, instrument);
-//     }
-//     if (credit) {
-//       b1.addToAccount(b2.id, category, instrument, amount);
-//     } else {
-//       b1.minusFromAccount(b2.id, category, instrument, amount);
-//     }
-//   }
-//   mapBalance(
-//     b1: Bank,
-//     categories: CategoryKey[],
-//     instruments: InstrumentKey[]
-//   ) {
-//     const balanceIndex = this.findAccountIndex(b1.id, "balances", instruments[0]);
-//     const index1 = this.findAccountIndex(b1.id, categories[0], instruments[0]);
-//     const index2 = this.findAccountIndex(b1.id, categories[1], instruments[1]);
-//     const balance = this.balances.customerDeposits[balanceIndex].amount;
-//     if (balance < 0) {
-//       this[categories[0]][instruments[0]][index2].amount = 0;
-//       this[categories[1]][instruments[1]][index1].amount = -balance;
-//     } else if (balance > 0) {
-//       this[categories[0]][instruments[0]][index1].amount = balance;
-//       this[categories[1]][instruments[1]][index2].amount = 0;
-//     } else {
-//       this[categories[0]][instruments[0]][index1].amount = 0;
-//       this[categories[1]][instruments[1]][index2].amount = 0;
-//     }
-// // barclays.assets.deposits(hsbc, 1000)
-// // barclays.assets.overdrafts(hsbc, 100)
-// // barclays.liabilities.deposits(hsbc, 0)
-// // barclays.liabilities.overdrafts(hsbc, 0)
-// // hsbc.assets.deposits(hsbc, 0)
-// // hsbc.assets.overdrafts(hsbc, 0)
-// // hsbc.liabilities.deposits(hsbc, 1000)
-// // hsbc.liabilities.overdrafts(hsbc, 100)
-//   }
+  findAccountIndex(
+    id: string,
+    category: CategoryKey,
+    instrument: InstrumentKey
+  ) {
+    const index = this[category][instrument].findIndex((acc: Account) => {
+      return acc.id === id;
+    });
+    return index;
+  }
 
-//   static createCorrespondingAccounts(
-//     b1: Bank,
-//     b2: Bank,
-//     amount: number,
-//     instrument: InstrumentKey
-//   ) {
-//     b1.createAccount(b2.id, "assets", instrument, amount);
-//     b1.createAccount(b2.id, "liabilities", instrument, amount);
-//     b1.createAccount(b2.id, "balances", instrument, amount);
-//     b2.createAccount(b1.id, "assets", instrument, amount);
-//     b2.createAccount(b1.id, "liabilities", instrument, amount);
-//     b2.createAccount(b1.id, "balances", instrument, amount);
-//     b1.createAccount(b2.id, "liabilities", "customerOverdrafts", amount);
-//   }
-// }
+  setAccount(
+    id: string,
+    category: CategoryKey,
+    instrument: InstrumentKey,
+    amount: number
+  ) {
+    const index = this.findAccountIndex(id, category, instrument);
+    this[category][instrument][index].amount = amount;
+  }
 
-// export class CommercialBank extends Bank {
-//   constructor(
-//     public id: string,
-//     public assets: Category,
-//     public liabilities: Category,
-//     public balances: Category,
-//     public reserves: number = 0
-//   ) {
-//     super(id, assets, liabilities, balances);
-//   }
-//   deposit(amount: number) {
-//     this.reserves += amount;
-//   }
-//   withdraw(amount: number) {
-//     this.reserves -= amount;
-//   }
-// }
+  increaseBalance(id: string, amount: number, creditInstrument: InstrumentKey) {
+    const index = this.findAccountIndex(id, "balances", creditInstrument);
+    this.balances[creditInstrument][index].amount += amount;
+  }
+  decreaseBalance(id: string, amount: number, creditInstrument: InstrumentKey) {
+    const index = this.findAccountIndex(id, "balances", creditInstrument);
+    this.balances[creditInstrument][index].amount -= amount;
+  }
+  increaseReserves(amount: number) {
+    this.reserves += amount;
+  }
+  decreaseReserves(amount: number) {
+    this.reserves -= amount;
+  }
 
-// export class CorrespondentBank extends Bank {
-//   constructor(
-//     public id: string,
-//     public assets: Category,
-//     public liabilities: Category,
-//     public balances: Category,
-//     public reserves: number = 0
-//   ) {
-//     super(id, assets, liabilities, balances);
-//   }
-//   static creditAccount(
-//     b1: Bank,
-//     b2: Bank,
-//     amount: number,
-//     instrument: InstrumentKey
-//   ) {
-//     Bank.transferDeposit(b1, b2, amount, instrument, true);
-//   }
-//   static debitAccount(
-//     b1: Bank,
-//     b2: Bank,
-//     amount: number,
-//     instrument: InstrumentKey
-//   ) {
-//     Bank.transferDeposit(b2, b1, amount, instrument, false);
-//   }
-  
-//   static createCorrespondingAccountsTest(
-//     a: CorrespondentBank,
-//     b: CorrespondentBank,
-//     amount: number
-//   ) {
-//     a.createAccount(b.id, "assets", "bankDeposits", amount);
-//     a.createAccount(b.id, "liabilities", "bankDeposits", amount);
-//     a.createAccount(b.id, "assets", "bankOverdrafts", amount);
-//     a.createAccount(b.id, "liabilities", "bankOverdrafts", amount);
-//     a.createAccountTest(a, b, "balances", "bankDeposits", amount);
-//     b.createAccountTest(a, b, "balances", "bankDeposits", amount);
+  static mapBalance(
+    a: Bank,
+    b: Bank,
+    creditInstrument: InstrumentKey,
+    debtInstrument: InstrumentKey
+  ) {
+    const index = b.findAccountIndex(a.id, "balances", creditInstrument);
+    const balance = b.balances[creditInstrument][index].amount;
+    if (balance > 0) {
+      a.setAccount(b.id, "assets", creditInstrument, balance);
+      b.setAccount(a.id, "liabilities", creditInstrument, balance);
+      a.setAccount(b.id, "liabilities", debtInstrument, 0);
+      b.setAccount(a.id, "assets", debtInstrument, 0);
+    } else if (balance < 0) {
+      a.setAccount(b.id, "liabilities", debtInstrument, -balance);
+      b.setAccount(a.id, "assets", debtInstrument, -balance);
+      a.setAccount(b.id, "assets", creditInstrument, 0);
+      b.setAccount(a.id, "liabilities", creditInstrument, 0);
+    } else if (balance === 0) {
+      a.setAccount(b.id, "liabilities", debtInstrument, 0);
+      b.setAccount(a.id, "assets", debtInstrument, 0);
+      a.setAccount(b.id, "assets", creditInstrument, 0);
+      b.setAccount(a.id, "liabilities", creditInstrument, 0);
+    }
+  }
 
-//     b.createAccount(a.id, "assets", "bankOverdrafts", amount);
-//     b.createAccount(a.id, "liabilities", "bankOverdrafts", amount);
-//     b.createAccount(a.id, "assets", "bankDeposits", amount);
-//     b.createAccount(a.id, "liabilities", "bankDeposits", amount);
-//     b.createAccountTest(b, a, "balances", "bankDeposits", amount);
-//     a.createAccountTest(b, a, "balances", "bankDeposits", amount);
-//   }
-// }
+  static createCustomerAccount(
+    a: Customer,
+    b: Bank,
+    amount: number,
+    creditInstrument: InstrumentKey,
+    debtInstrument: InstrumentKey
+  ) {
+    Bank.createAccount(a, b, amount, creditInstrument, debtInstrument);
+    b.createInstrumentAccount(a.id, "balances", creditInstrument, amount);
+  }
 
-// export class Customer extends Bank {
-//   constructor(
-//     public id: string,
-//     public assets: Category,
-//     public liabilities: Category,
-//     public balances: Category,
-//     public cash: number = 0
-//   ) {
-//     super(id, assets, liabilities, balances);
-//   }
-//   deposit(amount: number) {
-//     this.cash -= amount;
-//   }
-//   withdraw(amount: number) {
-//     this.cash += amount;
-//   }
+  static createCorrespondingAccounts(
+    a: Bank,
+    b: Bank,
+    amount: number,
+    creditInstrument: InstrumentKey,
+    debtInstrument: InstrumentKey
+  ) {
+    Bank.createAccount(a, b, amount, creditInstrument, debtInstrument);
+    Bank.createAccount(b, a, amount, creditInstrument, debtInstrument);
+    a.createInstrumentAccount(b.id, "balances", creditInstrument, amount);
+    b.createInstrumentAccount(a.id, "balances", creditInstrument, amount);
+  }
 
-//   static makeDeposit(c1: Customer, b1: CommercialBank, amount: number) {
-//     c1.addToAccount(b1.id, "balances", "customerDeposits", amount);
-//     b1.addToAccount(c1.id, "balances", "customerDeposits", amount);
-//     c1.mapBalance(
-//       b1,
-//       ["assets", "liabilities"],
-//       ["customerDeposits", "customerOverdrafts"]
-//     );
-//     b1.mapBalance(
-//       c1,
-//       ["liabilities", "assets"],
-//       ["customerDeposits", "customerOverdrafts"]
-//     );
-//     c1.deposit(amount);
-//     b1.deposit(amount);
-//   }
-//   static makeWithdrawal(c1: Customer, b1: CommercialBank, amount: number) {
-//     c1.minusFromAccount(b1.id, "balances", "customerDeposits", amount);
-//     b1.minusFromAccount(c1.id, "balances", "customerDeposits", amount);
-//     c1.mapBalance(
-//       b1,
-//       ["assets", "liabilities"],
-//       ["customerDeposits", "customerOverdrafts"]
-//     );
-//     b1.mapBalance(
-//       c1,
-//       ["liabilities", "assets"],
-//       ["customerDeposits", "customerOverdrafts"]
-//     );
-//     c1.deposit(amount);
-//     b1.deposit(amount);
-//   }
-//   static createCorrespondingAccounts(
-//     c: Customer,
-//     b: CommercialBank,
-//     amount: number
-//   ) {
-//     c.createAccount(b.id, "assets", "customerDeposits", amount);
-//     c.createAccount(b.id, "liabilities", "customerOverdrafts", amount);
-//     c.createAccount(b.id, "balances", "customerDeposits", amount);
-//     b.createAccount(c.id, "assets", "customerOverdrafts", amount);
-//     b.createAccount(c.id, "liabilities", "customerDeposits", amount);
-//     b.createAccount(c.id, "balances", "customerDeposits", amount);
-//   }
-// }
+  private static createAccount(
+    a: Customer,
+    b: Bank,
+    amount: number,
+    creditInstrument: InstrumentKey,
+    debtInstrument: InstrumentKey
+  ) {
+    a.createInstrumentAccount(b.id, "assets", creditInstrument, amount);
+    a.createInstrumentAccount(b.id, "liabilities", debtInstrument, 0);
+    b.createInstrumentAccount(a.id, "assets", debtInstrument, 0);
+    b.createInstrumentAccount(a.id, "liabilities", creditInstrument, amount);
+  }
 
-// //TODO: MAKE THE NEGATIVE FUNCTION DYNAMIC
+  hasReserves(amount: number) {
+    return this.reserves - amount < 0 ? false : true;
+  }
+}
+
+export class CommercialBank extends Bank {
+  constructor(
+    public id: string,
+    public assets: Category,
+    public liabilities: Category,
+    public balances: Category,
+    public reserves: number = 1000
+  ) {
+    super(id, assets, liabilities, balances, reserves);
+  }
+  deposit(amount: number) {
+    this.reserves += amount;
+  }
+  withdraw(amount: number) {
+    this.reserves -= amount;
+  }
+}
+
+export class CorrespondentBank extends Bank {
+  constructor(
+    public id: string,
+    public assets: Category,
+    public liabilities: Category,
+    public balances: Category,
+    public reserves: number = 1000
+  ) {
+    super(id, assets, liabilities, balances, reserves);
+  }
+  static creditAccount(a: Bank, b: Bank, amount: number) {
+    b.increaseBalance(a.id, amount, "bankDeposits");
+    Bank.mapBalance(a, b, "bankDeposits", "bankOverdrafts");
+  }
+  static debitAccount(a: Bank, b: Bank, amount: number) {
+    b.decreaseBalance(a.id, amount, "bankDeposits");
+    Bank.mapBalance(a, b, "bankDeposits", "bankOverdrafts");
+  }
+}
+
+export class Customer extends Bank {
+  constructor(
+    public id: string,
+    public assets: Category,
+    public liabilities: Category,
+    public balances: Category,
+    public reserves: number = 100
+  ) {
+    super(id, assets, liabilities, balances, reserves);
+  }
+  static makeDeposit(a: Customer, b: CommercialBank, amount: number) {
+    if (!a.hasReserves(amount)) {
+      console.log(`${a.id} has insufficient funds to make deposit`)
+    }
+    a.decreaseReserves(amount);
+    b.increaseReserves(amount);
+    b.increaseBalance(a.id, amount, "customerDeposits");
+    Bank.mapBalance(a, b, "customerDeposits", "customerOverdrafts");
+  }
+  static makeWithdrawal(a: Customer, b: CommercialBank, amount: number) {
+    if (!b.hasReserves(amount)) {
+      console.log(`${b.id} has insufficient funds to make deposit`)
+    }
+    a.increaseReserves(amount);
+    b.decreaseReserves(amount);
+    b.decreaseBalance(a.id, amount, "customerDeposits");
+    Bank.mapBalance(a, b, "customerDeposits", "customerOverdrafts");
+  }
+
+}
+
+//TODO: MAKE THE NEGATIVE FUNCTION DYNAMIC

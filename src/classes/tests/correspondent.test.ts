@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
-import { CorrespondentBank } from "../newClasses";
-import { createCorrespondentBanks } from "./fixtures3";
+import { CorrespondentBank } from "../classes";
+import { createCorrespondentBanks } from "./testFixtures";
 
 describe("correspondent banking 2", () => {
   it("should open corresponding accounts with correct ids and amounts", () => {

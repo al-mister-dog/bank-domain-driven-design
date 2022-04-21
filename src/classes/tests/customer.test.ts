@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
-import { Customer } from "../newClasses";
-import { createCommercialBanks } from "./fixtures3";
+import { Customer } from "../classes";
+import { createCommercialBanks } from "./testFixtures";
 
 describe("balances", () => {
   it("should have correct corresponding accounts on init", () => {
@@ -211,3 +211,29 @@ describe("balances", () => {
     })
   })
 });
+
+describe("reserves", () => {
+  it("should decrease customer reserves on deposit", () => {
+    const { barclays, johnDoe } = createCommercialBanks();
+    Customer.createCustomerAccount(johnDoe, barclays, 0, "customerDeposits", "customerOverdrafts");
+    johnDoe.reserves = 100
+    expect(johnDoe.reserves).toBe(100)
+    Customer.makeDeposit(johnDoe, barclays, 100)  
+    expect(johnDoe.reserves).toBe(0)
+  })
+  it("should increase customer reserves on deposit", () => {
+    const { barclays, johnDoe } = createCommercialBanks();
+    Customer.createCustomerAccount(johnDoe, barclays, 0, "customerDeposits", "customerOverdrafts");
+    johnDoe.reserves = 100
+    expect(johnDoe.reserves).toBe(100)
+    Customer.makeWithdrawal(johnDoe, barclays, 100)  
+    expect(johnDoe.reserves).toBe(200)
+  })
+  it("should quit function if customer does not have enough reserves to make a deposit", () => {
+    const { barclays, johnDoe } = createCommercialBanks();
+    Customer.createCustomerAccount(johnDoe, barclays, 0, "customerDeposits", "customerOverdrafts");
+    johnDoe.reserves = 0
+    Customer.makeDeposit(johnDoe, barclays, 100)  
+    expect(johnDoe.assets.customerDeposits[0].amount).toBe(0)
+  })
+})
