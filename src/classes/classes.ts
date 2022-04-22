@@ -1,10 +1,8 @@
 import { Account, Category, CategoryKey, InstrumentKey, IBank } from "./types";
 interface ILookup {
-  [key: string]: CommercialBank
+  [key: string]: CommercialBank;
 }
-const lookupTable: ILookup = {
-
-}
+const lookupTable: ILookup = {};
 
 export class Bank implements IBank {
   constructor(
@@ -71,7 +69,35 @@ export class Bank implements IBank {
   decreaseReserves(amount: number) {
     this.reserves -= amount;
   }
+  increaseDues(id: string, category: CategoryKey, amount: number) {
+    if (!this.findAccount(id, category, "dues")) {
+      this.createInstrumentAccount(id, category, "dues", amount);
+    } else {
+      const index = this.findAccountIndex(id, category, "dues");
+      this[category].dues[index].amount += amount;
+    }
+  }
 
+  netAccounts(bank: Bank) {
+    let dueFrom = this.assets.dues.find((due) => due.id === bank.id);
+    let dueTo = this.liabilities.dues.find((due) => due.id === bank.id);
+    if (dueFrom === undefined && dueTo === undefined) {
+      return;
+    }
+    if (dueFrom === undefined || dueTo === undefined) {
+      return;
+    }
+    if (dueFrom.amount > dueTo.amount) {
+      dueFrom.amount = dueFrom.amount - dueTo.amount;
+      dueTo.amount = 0;
+    } else if (dueTo.amount > dueFrom.amount) {
+      dueTo.amount = dueTo.amount - dueFrom.amount;
+      dueFrom.amount = 0;
+    } else {
+      dueTo.amount = 0;
+      dueFrom.amount = 0;
+    }
+  }
   static mapBalance(
     a: Bank,
     b: Bank,
@@ -98,6 +124,28 @@ export class Bank implements IBank {
     }
   }
 
+  static netTransfer(a: Bank, b: Bank) {
+    a.netAccounts(b);
+    b.netAccounts(a);
+    const aIsLiable = a.assets.dues.find(
+      (due) => due.id === b.id && due.amount > 0
+    );
+    const bIsLiable = b.assets.dues.find(
+      (due) => due.id === a.id && due.amount > 0
+    );
+    if (aIsLiable) {
+      CorrespondentBank.creditAccount(a, b, aIsLiable.amount);
+    }
+    if (bIsLiable) {
+      // CorrespondentBank.creditAccount(b, a, bIsLiable.amount);
+      console.log(bIsLiable.amount)
+    }
+    if (!aIsLiable && !bIsLiable) {
+      return;
+    }
+    // this.clearDues(a, b);
+  }
+  // static clearDues(a: Bank, b: Bank) {}
   static createCustomerAccount(
     a: Customer,
     b: Bank,
@@ -169,8 +217,9 @@ export class CorrespondentBank extends Bank {
     super(id, assets, liabilities, balances, reserves);
   }
   static creditAccount(a: Bank, b: Bank, amount: number) {
-    b.increaseBalance(a.id, amount, "bankDeposits");
-    Bank.mapBalance(a, b, "bankDeposits", "bankOverdrafts");
+    console.log(a.assets.dues)
+    // b.increaseBalance(a.id, amount, "bankDeposits");
+    // Bank.mapBalance(a, b, "bankDeposits", "bankOverdrafts");
   }
   static debitAccount(a: Bank, b: Bank, amount: number) {
     b.decreaseBalance(a.id, amount, "bankDeposits");
@@ -192,13 +241,13 @@ export class Customer extends Bank {
     if (!a.hasReserves(amount)) {
       // console.log(`${a.id} has insufficient funds to make deposit`)
     }
-    this.creditAccount(a, b, amount)
+    this.creditAccount(a, b, amount);
   }
   static makeWithdrawal(a: Customer, b: CommercialBank, amount: number) {
     if (!b.hasReserves(amount)) {
       // console.log(`${b.id} has insufficient funds to make deposit`)
     }
-    this.debitAccount(a, b, amount)
+    this.debitAccount(a, b, amount);
   }
 
   static creditAccount(a: Customer, b: CommercialBank, amount: number) {
@@ -215,30 +264,19 @@ export class Customer extends Bank {
   }
 
   static giveDetails(a: Customer, b: Customer, bank: CommercialBank) {
-    lookupTable[`${a.id}${b.id}`] = bank
+    lookupTable[`${a.id}${b.id}`] = bank;
   }
   static shareDetails(a: Customer, b: Customer, bank: CommercialBank) {
-    lookupTable[`${a.id}${b.id}`] = bank
-    lookupTable[`${b.id}${a.id}`] = bank
+    lookupTable[`${a.id}${b.id}`] = bank;
+    lookupTable[`${b.id}${a.id}`] = bank;
   }
   static transfer(a: Customer, b: Customer, amount: number) {
-    const bank = lookupTable[`${a.id}${b.id}`]
-    this.debitAccount(a, bank, amount)
-    this.creditAccount(b, bank, amount)
+    const bankA = lookupTable[`${a.id}${b.id}`];
+    const bankB = lookupTable[`${b.id}${a.id}`];
+    this.debitAccount(a, bankA, amount);
+    bankA.increaseDues(bankB.id, "liabilities", amount);
+    this.creditAccount(b, bankB, amount);
+    bankB.increaseDues(bankA.id, "assets", amount);
   }
-  static interTransfer(a: Customer, b: Customer, amount: number) {
-    const bankA = lookupTable[`${a.id}${b.id}`]
-    const bankB = lookupTable[`${b.id}${a.id}`]
-    console.log(bankA.id)
-    console.log(bankB.id)
-    this.debitAccount(a, bankA, amount)
-    this.creditAccount(b, bankB, amount)
-  }
-}
-
-//TODO: MAKE THE NEGATIVE FUNCTION DYNAMIC
-export class Systems {
-  shareAccountDetails() {
-
-  }
+  // "transfer" might work for intertransfer
 }
