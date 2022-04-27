@@ -1,23 +1,7 @@
-import { Bank, CommercialBank, CorrespondentBank, Customer } from "../classes";
+import { CommercialBank, Customer } from "../classes";
 import { commercialAssets, commercialLiabilities, balances } from "../fixtures";
 
-type Banks1 = {
-  newBank: Bank;
-  hsbc: CorrespondentBank;
-  barclays: CorrespondentBank;
-};
-type Banks2 = {
-  hsbc: CommercialBank;
-  barclays: CommercialBank;
-  johnDoe: Customer;
-};
-type Banks3 = {
-  hsbc: CommercialBank;
-  barclays: CommercialBank;
-  johnDoe: Customer;
-  janeDoe: Customer;
-};
-export function createCorrespondentBanks(): Banks1 {
+export function createCorrespondentBanks() {
   const newBank = new CommercialBank(
     "1",
     { ...commercialAssets },
@@ -25,17 +9,17 @@ export function createCorrespondentBanks(): Banks1 {
     { ...balances },
     0
   );
-  const hsbc = new CorrespondentBank(
+  const hsbc = new CommercialBank(
     "HSBC",
     { ...commercialAssets },
     { ...commercialLiabilities },
-    { ...balances },
+    { ...balances }
   );
-  const barclays = new CorrespondentBank(
+  const barclays = new CommercialBank(
     "BARCLAYS",
     { ...commercialAssets },
     { ...commercialLiabilities },
-    { ...balances },
+    { ...balances }
   );
   return {
     newBank,
@@ -44,24 +28,24 @@ export function createCorrespondentBanks(): Banks1 {
   };
 }
 
-export function createCommercialBanks(): Banks2 {
+export function createCommercialBanks() {
   const hsbc = new CommercialBank(
     "HSBC",
     { ...commercialAssets },
     { ...commercialLiabilities },
-    { ...balances },
+    { ...balances }
   );
   const barclays = new CommercialBank(
     "BARCLAYS",
     { ...commercialAssets },
     { ...commercialLiabilities },
-    { ...balances },
+    { ...balances }
   );
   const johnDoe = new Customer(
     "JOHN_DOE",
-    { customerDeposits: [{ id: "ID", amount: 0 }] },
-    { customerOverdrafts: [{ id: "ID", amount: 0 }] },
-    { ...balances },
+    { customerDeposits: [] },
+    { customerOverdrafts: [] },
+    { ...balances }
   );
   return {
     hsbc,
@@ -70,35 +54,89 @@ export function createCommercialBanks(): Banks2 {
   };
 }
 
-export function createInterBank(): Banks3 {
+export function createInterBank() {
   const hsbc = new CommercialBank(
     "HSBC",
     { ...commercialAssets },
     { ...commercialLiabilities },
-    { ...balances },
+    { ...balances }
   );
   const barclays = new CommercialBank(
     "BARCLAYS",
     { ...commercialAssets },
     { ...commercialLiabilities },
-    { ...balances },
+    { ...balances }
   );
   const johnDoe = new Customer(
     "JOHN_DOE",
-    { customerDeposits: [{ id: "ID", amount: 0 }] },
-    { customerOverdrafts: [{ id: "ID", amount: 0 }] },
-    { ...balances },
+    { customerDeposits: [] },
+    { customerOverdrafts: [] },
+    { ...balances }
   );
   const janeDoe = new Customer(
     "JANE_DOE",
-    { customerDeposits: [{ id: "ID", amount: 0 }] },
-    { customerOverdrafts: [{ id: "ID", amount: 0 }] },
-    { ...balances },
+    { customerDeposits: [] },
+    { customerOverdrafts: [] },
+    { ...balances }
   );
   return {
     hsbc,
     barclays,
     johnDoe,
     janeDoe,
+  };
+}
+
+export function clearingHouseSystem() {
+  const clearingHouse = new CommercialBank(
+    "CLEARINGHOUSE",
+    { ...commercialAssets },
+    { ...commercialLiabilities },
+    { ...balances }
+  );
+  const santander = new CommercialBank(
+    "SANTANDER",
+    { ...commercialAssets },
+    { ...commercialLiabilities },
+    { ...balances }
+  );
+  const hsbc = new CommercialBank(
+    "HSBC",
+    { ...commercialAssets },
+    { ...commercialLiabilities },
+    { ...balances }
+  );
+  const barclays = new CommercialBank(
+    "BARCLAYS",
+    { ...commercialAssets },
+    { ...commercialLiabilities },
+    { ...balances }
+  );
+  const johnDoe = new Customer(
+    "JOHN_DOE",
+    { customerDeposits: [] },
+    { customerOverdrafts: [] },
+    { ...balances }
+  );
+  const janeDoe = new Customer(
+    "JANE_DOE",
+    { customerDeposits: [] },
+    { customerOverdrafts: [] },
+    { ...balances }
+  );
+  const bobSmith = new Customer(
+    "BOB_SMITH",
+    { customerDeposits: [] },
+    { customerOverdrafts: [] },
+    { ...balances }
+  );
+  return {
+    clearingHouse,
+    santander,
+    hsbc,
+    barclays,
+    johnDoe,
+    janeDoe,
+    bobSmith,
   };
 }

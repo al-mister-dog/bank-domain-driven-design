@@ -1,0 +1,47 @@
+is a clearinghouse just a bank?
+
+clearinghouse = new Bank()
+b1 = new Bank()
+b2 = new Bank()
+b3 = new Bank()
+c1 = new Customer()
+c2 = new Customer()
+c3 = new Customer()
+
+Bank.createCorrespondingAccounts(b1, b2)
+Bank.createCorrespondingAccounts(b1, b3)
+Bank.createCorrespondingAccounts(b2, b1)
+Bank.createCorrespondingAccounts(b2, b3)
+Bank.createCorrespondingAccounts(b3, b1)
+Bank.createCorrespondingAccounts(b3, b2)
+
+function createClearingHouse(banks, clearingHouse) {
+  this.clearingHouse = clearingHouse
+  for (const bank in banks) {
+    Bank.createCorrespondingAccounts(bank, clearingHouse, 10000)
+  }
+}
+
+Customer.createSubordinateAccount(c1, b1)
+Customer.createSubordinateAccount(c2, b2)
+Customer.createSubordinateAccount(c3, b3)
+
+totalAccounts()
+return total and make out to designated clearingHouse
+ClearingHouse.clearingHouse
+
+clearinghouse certificates are exactly the same as bank deposits. they are a claim on money
+to be paid on demand
+
+
+example
+santander owes clearinghouse 40
+both banks have totalAccounts
+
+result
+before settlement
+clearingHouse has asset dues and liability dues
+the clearinghouse only has liability chCertificates
+santander gives clearinhouse its assets of 40
+santander.assets.chCertificates 9960
+clearinghouse.assets.chCertificatess = 1040

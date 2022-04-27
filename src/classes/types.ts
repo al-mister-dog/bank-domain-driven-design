@@ -22,6 +22,8 @@ export interface InstrumentTypes {
   customerOverdrafts: Account[];
   customerDeposits: Account[];
   dues: Account[];
+  chCertificates: Account[];
+  chOverdrafts: Account[];
 }
 
 export interface IBank {

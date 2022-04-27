@@ -1,5 +1,12 @@
 fees and charges
 loans
-netting and totalling
+netting and totalling : doing this. randomise transfers
 
 dealing with lacl of reserves
+
+
+clearinghouse shuld only have ch liabilities
+member banks shoud only have ch assets
+
+when a bank deals with another bank they are equals
+when a bank deals with a clearingHouse a bank is like a Customer
