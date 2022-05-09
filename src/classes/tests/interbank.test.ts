@@ -498,7 +498,7 @@ describe("dues", () => {
       expect(hsbc.liabilities.bankDeposits[0].amount).toBe(1000)
       expect(barclays.assets.bankDeposits[0].amount).toBe(1000)
       expect(barclays.liabilities.bankDeposits[0].amount).toBe(1000)
-      CommercialBank.netTransfer(hsbc, barclays)
+      CommercialBank.netAccountsAndTransfer(hsbc, barclays)
       expect(hsbc.assets.dues[0].amount).toBe(0)
       expect(hsbc.liabilities.dues[0].amount).toBe(0)
       expect(barclays.assets.dues[0].amount).toBe(0)

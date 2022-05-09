@@ -45,3 +45,44 @@ the clearinghouse only has liability chCertificates
 santander gives clearinhouse its assets of 40
 santander.assets.chCertificates 9960
 clearinghouse.assets.chCertificatess = 1040
+
+//NOTES
+Each use of the loan certificate required another member bank to refrain from collecting a 
+payment of reserves. This individual bank that does not collect reserves essentially makes 
+a temporary interbank loan.
+
+Further, the central clearinghouse did not retain the interest paid by banks that borrowed 
+loan certificates, so the central clearinghouse was not a lender. The interest on the loan 
+certificate accrued to the individual lending bank.
+
+healthy and conservative banks might prefer to cooperate less under a loan certificate 
+system if riskier banks regularly required larger borrowings of loan certificates.
+
+step 1: travelling porter
+
+step 2: net clearing
+net clearing: we gather all of the payments from the day and net them (exchange) so as to 
+transfer a smaller quantity of physical money (settlement). 
+
+
+The settlement process was expedited by allowing banks to store currency at the clearinghouse. 
+The clearinghouse created special certificates called clearinghouse certificates that represented 
+a claim on actual money stored in a vault and could be used in the settlement.
+
+
+//FAILURES
+After the exchanges but before the settlement, a debtor bank could fail, causing a loss to a 
+creditor bank that never accepted a check from the debtor bank.
+
+Therefore, member banks would want assurances that all other members were financially sound.
+Gorton and Mullineaux emphasize tactics such as bank examinations and monitoring of bank 
+statements that bank clearinghouses employed to ensure the solvency of its members.
+
+
+                      clearinghouse
+member loan from debtorbank| chLoan to creditorbank
+
+debtorbank                    creditorbank
+random assets | chLoan        chLoan  | random liabilities
+              |                       |
+              |                       |

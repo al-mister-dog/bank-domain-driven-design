@@ -1,4 +1,4 @@
-netTransfer()
+netAccountsAndTransfer()
   a.net(b)
   b.net(a)
   if (a owes b) {
@@ -28,7 +28,7 @@ b1 and b2.netAccounts()
 b1 or b2 credit or debit bilaterally()
 
 the second two steps could possibly be done together
-netTransfer() {
+netAccountsAndTransfer() {
   b1 and b2.netAccounts()
   b1 or b2 credit or debit bilaterally() 
   clearDues() //decrease dues to zero

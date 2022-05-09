@@ -13,29 +13,48 @@ export class Bank implements IBank {
     public balances: Category,
     public reserves: number
   ) {}
-  createInstrumentAccount(
+  setAccount(
     id: string,
     category: CategoryKey,
     instrument: InstrumentKey,
-    amount: number = 0
-  ): void {
-    // if (!this[category][instrument]) {
-    //   return;
-    // }
-    this[category][instrument] = [
-      ...this[category][instrument],
-      { id, amount },
-    ];
+    amount: number
+  ) {
+    const index = this.findAccountIndex(id, category, instrument);
+    this[category][instrument][index].amount = amount;
   }
-
   getAccount(id: string, category: CategoryKey, instrument: InstrumentKey) {
+    const account: Account | undefined = this[category][instrument].find(
+      (acc: Account) => acc.id === id
+    );
+    if (!account) {
+      return { id: "null", amount: 0 };
+    }
+    return account;
+  }
+  isAccount(
+    id: string,
+    category: CategoryKey,
+    instrument: InstrumentKey
+  ): boolean {
     let account = this[category][instrument].find(
       (acc: Account) => acc.id === id
     );
     return account ? true : false;
   }
 
-  getAccountIndex(
+  createInstrumentAccount(
+    id: string,
+    category: CategoryKey,
+    instrument: InstrumentKey,
+    amount: number = 0
+  ): void {
+    this[category][instrument] = [
+      ...this[category][instrument],
+      { id, amount },
+    ];
+  }
+
+  findAccountIndex(
     id: string,
     category: CategoryKey,
     instrument: InstrumentKey
@@ -46,24 +65,95 @@ export class Bank implements IBank {
     return index;
   }
 
-  setAccount(
+  static createSubordinateAccount(
+    a: Bank,
+    b: Bank,
+    amount: number,
+    creditInstrument: InstrumentKey,
+    debtInstrument: InstrumentKey
+  ) {
+    a.createInstrumentAccount(b.id, "assets", creditInstrument, amount);
+    a.createInstrumentAccount(b.id, "liabilities", debtInstrument, 0);
+    b.createInstrumentAccount(a.id, "assets", debtInstrument, 0);
+    b.createInstrumentAccount(a.id, "liabilities", creditInstrument, amount);
+    b.createInstrumentAccount(a.id, "balances", creditInstrument, amount);
+  }
+
+  static createCorrespondingAccounts(
+    a: Bank,
+    b: Bank,
+    amount: number,
+    creditInstrument: InstrumentKey,
+    debtInstrument: InstrumentKey
+  ) {
+    this.createSubordinateAccount(
+      a,
+      b,
+      amount,
+      creditInstrument,
+      debtInstrument
+    );
+    this.createSubordinateAccount(
+      b,
+      a,
+      amount,
+      creditInstrument,
+      debtInstrument
+    );
+  }
+
+  increaseInstrument(
     id: string,
     category: CategoryKey,
     instrument: InstrumentKey,
     amount: number
   ) {
-    const index = this.getAccountIndex(id, category, instrument);
-    this[category][instrument][index].amount = amount;
+    const index = this.findAccountIndex(id, category, instrument);
+    this[category][instrument][index].amount += amount;
   }
-
+  decreaseInstrument(
+    id: string,
+    category: CategoryKey,
+    instrument: InstrumentKey,
+    amount: number
+  ) {
+    const index = this.findAccountIndex(id, category, instrument);
+    this[category][instrument][index].amount -= amount;
+  }
   increaseBalance(id: string, amount: number, creditInstrument: InstrumentKey) {
-    const index = this.getAccountIndex(id, "balances", creditInstrument);
+    const index = this.findAccountIndex(id, "balances", creditInstrument);
     this.balances[creditInstrument][index].amount += amount;
   }
   decreaseBalance(id: string, amount: number, creditInstrument: InstrumentKey) {
-    const index = this.getAccountIndex(id, "balances", creditInstrument);
+    const index = this.findAccountIndex(id, "balances", creditInstrument);
     this.balances[creditInstrument][index].amount -= amount;
   }
+  static mapBalance(
+    a: Bank,
+    b: Bank,
+    creditInstrument: InstrumentKey,
+    debtInstrument: InstrumentKey
+  ) {
+    const index = b.findAccountIndex(a.id, "balances", creditInstrument);
+    const balance = b.balances[creditInstrument][index].amount;
+    if (balance > 0) {
+      a.setAccount(b.id, "assets", creditInstrument, balance);
+      b.setAccount(a.id, "liabilities", creditInstrument, balance);
+      a.setAccount(b.id, "liabilities", debtInstrument, 0);
+      b.setAccount(a.id, "assets", debtInstrument, 0);
+    } else if (balance < 0) {
+      a.setAccount(b.id, "liabilities", debtInstrument, -balance);
+      b.setAccount(a.id, "assets", debtInstrument, -balance);
+      a.setAccount(b.id, "assets", creditInstrument, 0);
+      b.setAccount(a.id, "liabilities", creditInstrument, 0);
+    } else if (balance === 0) {
+      a.setAccount(b.id, "liabilities", debtInstrument, 0);
+      b.setAccount(a.id, "assets", debtInstrument, 0);
+      a.setAccount(b.id, "assets", creditInstrument, 0);
+      b.setAccount(a.id, "liabilities", creditInstrument, 0);
+    }
+  }
+
   increaseReserves(amount: number) {
     this.reserves += amount;
   }
@@ -72,14 +162,22 @@ export class Bank implements IBank {
   }
 
   increaseDues(id: string, category: CategoryKey, amount: number) {
-    if (!this.getAccount(id, category, "dues")) {
+    if (!this.isAccount(id, category, "dues")) {
       this.createInstrumentAccount(id, category, "dues", amount);
     } else {
-      const index = this.getAccountIndex(id, category, "dues");
+      const index = this.findAccountIndex(id, category, "dues");
       this[category].dues[index].amount += amount;
     }
   }
 
+  reduceAccounts(bank: Bank, category: CategoryKey, instrument: InstrumentKey) {
+    return bank[category][instrument].reduce(
+      (acc, cur) => {
+        return { amount: acc.amount + cur.amount };
+      },
+      { amount: 0 }
+    );
+  }
   netAccounts(bank: Bank) {
     let dueFrom = this.assets.dues.find((due) => due.id === bank.id);
     let dueTo = this.liabilities.dues.find((due) => due.id === bank.id);
@@ -101,32 +199,6 @@ export class Bank implements IBank {
     }
   }
 
-  static mapBalance(
-    a: Bank,
-    b: Bank,
-    creditInstrument: InstrumentKey,
-    debtInstrument: InstrumentKey
-  ) {
-    const index = b.getAccountIndex(a.id, "balances", creditInstrument);
-    const balance = b.balances[creditInstrument][index].amount;
-    if (balance > 0) {
-      a.setAccount(b.id, "assets", creditInstrument, balance);
-      b.setAccount(a.id, "liabilities", creditInstrument, balance);
-      a.setAccount(b.id, "liabilities", debtInstrument, 0);
-      b.setAccount(a.id, "assets", debtInstrument, 0);
-    } else if (balance < 0) {
-      a.setAccount(b.id, "liabilities", debtInstrument, -balance);
-      b.setAccount(a.id, "assets", debtInstrument, -balance);
-      a.setAccount(b.id, "assets", creditInstrument, 0);
-      b.setAccount(a.id, "liabilities", creditInstrument, 0);
-    } else if (balance === 0) {
-      a.setAccount(b.id, "liabilities", debtInstrument, 0);
-      b.setAccount(a.id, "assets", debtInstrument, 0);
-      a.setAccount(b.id, "assets", creditInstrument, 0);
-      b.setAccount(a.id, "liabilities", creditInstrument, 0);
-    }
-  }
-
   static clearCorrespondingDues(a: Bank, b: Bank) {
     a.setAccount(b.id, "assets", "dues", 0);
     a.setAccount(b.id, "liabilities", "dues", 0);
@@ -136,47 +208,6 @@ export class Bank implements IBank {
   static clearSubordinateDues(a: Bank, b: Bank) {
     a.setAccount(b.id, "assets", "dues", 0);
     b.setAccount(a.id, "liabilities", "dues", 0);
-  }
-
-  private static createAccount(
-    a: Customer,
-    b: Bank,
-    amount: number,
-    creditInstrument: InstrumentKey,
-    debtInstrument: InstrumentKey
-  ) {
-    a.createInstrumentAccount(b.id, "assets", creditInstrument, amount);
-    a.createInstrumentAccount(b.id, "liabilities", debtInstrument, 0);
-    b.createInstrumentAccount(a.id, "assets", debtInstrument, 0);
-    b.createInstrumentAccount(a.id, "liabilities", creditInstrument, amount);
-  }
-
-  static createSubordinateAccount(
-    a: Bank,
-    b: Bank,
-    amount: number,
-    creditInstrument: InstrumentKey,
-    debtInstrument: InstrumentKey
-  ) {
-    this.createAccount(a, b, amount, creditInstrument, debtInstrument);
-    b.createInstrumentAccount(a.id, "balances", creditInstrument, amount);
-  }
-
-  static createCorrespondingAccounts(
-    a: Bank,
-    b: Bank,
-    amount: number,
-    creditInstrument: InstrumentKey,
-    debtInstrument: InstrumentKey
-  ) {
-    this.createSubordinateAccount(a, b, amount, creditInstrument, debtInstrument)
-    this.createSubordinateAccount(b, a, amount, creditInstrument, debtInstrument)
-    // this.createAccount(a, b, amount, creditInstrument, debtInstrument);
-    // b.createInstrumentAccount(a.id, "balances", creditInstrument, amount);
-    //YOU ARE HERE
-    // this.createAccount(b, a, amount, creditInstrument, debtInstrument);
-    // a.createInstrumentAccount(b.id, "balances", creditInstrument, amount);
-    
   }
 
   hasReserves(amount: number): boolean {
@@ -208,42 +239,8 @@ export class CommercialBank extends Bank {
     b.decreaseBalance(a.id, amount, "bankDeposits");
     Bank.mapBalance(a, b, "bankDeposits", "bankOverdrafts");
   }
-  totalAccounts() {
-    const totalDueFroms = this.assets.dues.reduce(
-      (a, b) => {
-        return { amount: a.amount + b.amount };
-      },
-      { amount: 0 }
-    );
 
-    const totalDueTos = this.liabilities.dues.reduce(
-      (a, b) => {
-        return { amount: a.amount + b.amount };
-      },
-      { amount: 0 }
-    );
-
-    if (ch) {
-      if (totalDueTos.amount > totalDueFroms.amount) {
-        const total = totalDueTos.amount - totalDueFroms.amount;
-        ch.increaseDues(this.id, "assets", total);
-        this.increaseDues(ch.id, "liabilities", total);
-        this.liabilities.dues = this.liabilities.dues.filter(
-          (due) => due.id === ch?.id
-        );
-        this.assets.dues = [{ id: ch.id, amount: 0 }];
-      } else if (totalDueFroms.amount > totalDueTos.amount) {
-        const total = totalDueFroms.amount - totalDueTos.amount;
-        ch.increaseDues(this.id, "liabilities", total);
-        this.increaseDues(ch.id, "assets", total);
-        this.assets.dues = this.assets.dues.filter((due) => due.id === ch?.id);
-        this.liabilities.dues = [{ id: ch.id, amount: 0 }];
-      }
-      // this.netAccounts(ch)
-    }
-    return { totalDueFroms, totalDueTos };
-  }
-  static netTransfer(a: Bank, b: Bank) {
+  static netAccountsAndTransfer(a: Bank, b: Bank) {
     a.netAccounts(b);
     b.netAccounts(a);
     const aIsLiable = a.assets.dues.find(
@@ -276,24 +273,24 @@ export class Customer extends Bank {
       return;
       // console.log(`${a.id} has insufficient funds to make deposit`)
     }
+    a.decreaseReserves(amount);
+    b.increaseReserves(amount);
     this.creditAccount(a, b, amount);
   }
   static makeWithdrawal(a: Customer, b: CommercialBank, amount: number) {
     if (!b.hasReserves(amount)) {
       // console.log(`${b.id} has insufficient funds to make deposit`)
     }
+    a.increaseReserves(amount);
+    b.decreaseReserves(amount);
     this.debitAccount(a, b, amount);
   }
 
   private static creditAccount(a: Customer, b: CommercialBank, amount: number) {
-    a.decreaseReserves(amount);
-    b.increaseReserves(amount);
     b.increaseBalance(a.id, amount, "customerDeposits");
     Bank.mapBalance(a, b, "customerDeposits", "customerOverdrafts");
   }
   private static debitAccount(a: Customer, b: CommercialBank, amount: number) {
-    a.increaseReserves(amount);
-    b.decreaseReserves(amount);
     b.decreaseBalance(a.id, amount, "customerDeposits");
     Bank.mapBalance(a, b, "customerDeposits", "customerOverdrafts");
   }
@@ -308,30 +305,81 @@ export class Customer extends Bank {
   static transfer(a: Customer, b: Customer, amount: number) {
     const bankA = lookupTable[`${a.id}${b.id}`];
     const bankB = lookupTable[`${b.id}${a.id}`];
-
+    
     this.debitAccount(a, bankA, amount);
     bankA.increaseDues(bankB.id, "liabilities", amount);
     this.creditAccount(b, bankB, amount);
     bankB.increaseDues(bankA.id, "assets", amount);
   }
+
+  static createLoan(
+    a: Customer,
+    b: CommercialBank,
+    amount: number,
+    rate: number = 10
+  ) {
+    const interest = (amount * rate) / 100;
+    const amountPlusInterest = amount + interest;
+    a.createInstrumentAccount(
+      b.id,
+      "liabilities",
+      "customerLoans",
+      amountPlusInterest
+    );
+    b.createInstrumentAccount(
+      a.id,
+      "assets",
+      "customerLoans",
+      amountPlusInterest
+    );
+    this.creditAccount(a, b, amount);
+  }
+  static repayLoan(a: Customer, b: CommercialBank, amount: number) {
+    this.debitAccount(a, b, amount);
+    const loanAmount = b.getAccount(a.id, "assets", "customerLoans");
+    if (amount > loanAmount.amount) {
+      amount = loanAmount.amount;
+    }
+    a.decreaseInstrument(b.id, "liabilities", "customerLoans", amount);
+    b.decreaseInstrument(a.id, "assets", "customerLoans", amount);
+  }
+  static repayLoanReserves(a: Customer, b: CommercialBank, amount: number) {
+    a.decreaseReserves(amount);
+    b.increaseReserves(amount);
+    a.decreaseInstrument(b.id, "liabilities", "customerLoans", amount);
+    b.decreaseInstrument(a.id, "assets", "customerLoans", amount);
+  }
   // "transfer" might work for intertransfer
+  static getLookupTable() {
+    // console.log(Object.keys(lookupTable)
+  }
 }
+
 let members: Bank[] = [];
 let ch: Bank | undefined;
+
 export class ClearingHouse {
-  static create(banks: Bank[], clearingHouse: Bank) {
-    ch = clearingHouse;
+  static create(
+    banks: Bank[],
+    clearingHouse: Bank,
+    subscription: number = 500
+  ) {
+    clearingHouse.reserves = 0;
     members = [...members, ...banks];
     banks.forEach((bank) => {
       Bank.createSubordinateAccount(
         bank,
         clearingHouse,
-        10000,
+        subscription,
         "chCertificates",
         "chOverdrafts"
       );
+      bank.reserves -= subscription;
+      clearingHouse.reserves += subscription;
     });
+    ch = clearingHouse;
   }
+
   static transfer(bank: Bank, clearingHouse: Bank) {
     const bankIsLiable = bank.liabilities.dues.find(
       (due) => due.id === clearingHouse.id && due.amount > 0
@@ -340,72 +388,70 @@ export class ClearingHouse {
       (due) => due.id === clearingHouse.id && due.amount > 0
     );
     if (bankIsLiable) {
-      clearingHouse.decreaseBalance(bank.id, bankIsLiable.amount, "chCertificates");
+      clearingHouse.decreaseBalance(
+        bank.id,
+        bankIsLiable.amount,
+        "chCertificates"
+      );
       Bank.mapBalance(bank, clearingHouse, "chCertificates", "chOverdrafts");
-      Bank.clearSubordinateDues(clearingHouse, bank)
+      Bank.clearSubordinateDues(clearingHouse, bank);
     } else if (clearingHouseIsLiable) {
-      clearingHouse.increaseBalance(bank.id, clearingHouseIsLiable.amount, "chCertificates");
+      clearingHouse.increaseBalance(
+        bank.id,
+        clearingHouseIsLiable.amount,
+        "chCertificates"
+      );
       Bank.mapBalance(bank, clearingHouse, "chCertificates", "chOverdrafts");
-      Bank.clearSubordinateDues(bank, clearingHouse)
+      Bank.clearSubordinateDues(bank, clearingHouse);
     }
   }
 
   static totalAccounts(bank: Bank, clearingHouse: Bank) {
-    const isMember = members.find(m => m.id = bank.id)
+    const isMember = members.find((m) => (m.id = bank.id));
     if (isMember) {
-      const totalDueFroms = bank.assets.dues.reduce(
-        (a, b) => {
-          return { amount: a.amount + b.amount };
-        },
-        { amount: 0 }
-      );
-  
-      const totalDueTos = bank.liabilities.dues.reduce(
-        (a, b) => {
-          return { amount: a.amount + b.amount };
-        },
-        { amount: 0 }
-      );
-  
+      const totalDueFroms = bank.reduceAccounts(bank, "assets", "dues");
+      const totalDueTos = bank.reduceAccounts(bank, "liabilities", "dues");
+
       if (ch) {
         if (totalDueTos.amount > totalDueFroms.amount) {
-          const total = totalDueTos.amount - totalDueFroms.amount;
-          clearingHouse.increaseDues(bank.id, "assets", total);
-          bank.increaseDues(clearingHouse.id, "liabilities", total);
+          const netTotal = totalDueTos.amount - totalDueFroms.amount;
+          clearingHouse.increaseDues(bank.id, "assets", netTotal);
+          bank.increaseDues(clearingHouse.id, "liabilities", netTotal);
           bank.liabilities.dues = bank.liabilities.dues.filter(
             (due) => due.id === clearingHouse?.id
           );
           bank.assets.dues = [{ id: clearingHouse.id, amount: 0 }];
         } else if (totalDueFroms.amount > totalDueTos.amount) {
-          const total = totalDueFroms.amount - totalDueTos.amount;
-          clearingHouse.increaseDues(bank.id, "liabilities", total);
-          bank.increaseDues(clearingHouse.id, "assets", total);
-          bank.assets.dues = bank.assets.dues.filter((due) => due.id === clearingHouse?.id);
+          const netTotal = totalDueFroms.amount - totalDueTos.amount;
+          clearingHouse.increaseDues(bank.id, "liabilities", netTotal);
+          bank.increaseDues(clearingHouse.id, "assets", netTotal);
+          bank.assets.dues = bank.assets.dues.filter(
+            (due) => due.id === clearingHouse?.id
+          );
           bank.liabilities.dues = [{ id: clearingHouse.id, amount: 0 }];
         }
         return { totalDueFroms, totalDueTos };
-      } 
-      
+      }
     } else {
-      const totalDueFroms = bank.assets.dues.reduce(
-        (a, b) => {
-          return { amount: a.amount + b.amount };
-        },
-        { amount: 0 }
-      );
-  
-      const totalDueTos = bank.liabilities.dues.reduce(
-        (a, b) => {
-          return { amount: a.amount + b.amount };
-        },
-        { amount: 0 }
-      );
+      const totalDueFroms = bank.reduceAccounts(bank, "assets", "dues");
+      const totalDueTos = bank.reduceAccounts(bank, "liabilities", "dues");
       return { totalDueFroms, totalDueTos };
     }
-    
   }
-  static totalTransfer() {}
+
+  static settleAccount(bank: Bank, clearingHouse: Bank) {
+    this.totalAccounts(bank, clearingHouse);
+    this.transfer(bank, clearingHouse);
+  }
+  static settleAllAcounts(banks: Bank[], clearingHouse: Bank) {
+    banks.forEach((bank) => {
+      this.totalAccounts(bank, clearingHouse);
+      this.transfer(bank, clearingHouse);
+    });
+  }
   static get() {
     return ch;
   }
 }
+
+

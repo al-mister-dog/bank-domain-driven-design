@@ -140,3 +140,19 @@ export function clearingHouseSystem() {
     bobSmith,
   };
 }
+
+export function createLoanSystem() {
+  const hsbc = new CommercialBank(
+    "HSBC",
+    { ...commercialAssets },
+    { ...commercialLiabilities },
+    { ...balances }
+  );
+  const johnDoe = new Customer(
+    "JOHN_DOE",
+    { customerDeposits: [] },
+    { customerOverdrafts: [], customerLoans: [] },
+    { ...balances }
+  );
+  return { hsbc, johnDoe };
+}

@@ -1,0 +1,87 @@
+steps
+1 
+customers opens account with banks
+2
+customer transfers money to another customer
+
+automated:
+customerx uses bank account with most money to send transfer
+customery use bank account with least money to receive transfer
+
+goes into accounts and chooses bank 
+the bank in question is brought in by its id
+
+
+function Customer.transfer(c1, c2, amount, banks=optional) {
+  if (banks) {
+    doStuff(banks)
+  } else {
+    automateTransferFromAccount(c1, amount);
+    automateTransferToAccount(c2, amount);
+  }
+}
+
+alt
+function Customer.automateTransfer() {}
+
+
+function levels
+
+functions utilising one bank/customer
+customer1.foo() //internal
+
+functions utilising one customer and one bank
+Customer.foo(customer1, bank1) //static
+
+functions utilising two customers
+Customer.foo(customer1, customer2) //static
+
+functions utilising multiples of customers and banks
+Interface.foo() //outside of classes
+
+functions utilising constraints (eg reserve requirements etc)
+Interface.foo() //outside of classes
+
+
+
+DESIGN PATTERN
+problem 1:
+in different systems, bank transfers are dealt with in different ways
+correspondent system:
+  banks net accounts and accrue due froms and due tos with other banks
+clearinghouse system:
+  banks net accounts and accrue due froms and due tos with clearinghouse
+
+  correspondent:
+  1: banks hold accounts with each other
+  2: on transfer bankA tracks bankB and creates a dueTo or dueFrom, and vice versa
+  3: after netting dues, banks settle by either debitting or creditting their accounts
+  clearinghouse:
+  1: banks hold accounts with clearinghouse
+  2: on transfer bank creates a dueTo or dueFrom with clearinghouse, and vice versa
+  3: after netting dues, banks settle by paying or receiving clearinghouse certificates
+
+dues will either be to a bank or a clearinghouse depending on the banking system
+functions 2 and 3 will therefore be different
+
+  class CommercialBank {
+    ...
+    correspondent: true
+    clearinghouse: false
+  }
+  static handleDues(bankA, bankB) {
+    if (this.correspondent) {
+      increaseDues(bankA, bankB, liabilities, amount)
+      inccreaseDues(bankB, bankA, assets, amount)
+    }
+    if (this.clearinghouse) {
+      increaseDues(bankA, clearinghouse, liabilities, amount)
+      inccreaseDues(bankB, clearinghouse, assets, amount)
+    }
+  }
+  static transfer(customerA: Customer, customerB: Customer, amount: number) {
+    const bankA = this.automateTransferFromAccount(customerA);
+    const bankB = this.automateTransferToAccount(customerB);
+    Bank.debitAccount(customerA, bankA, amount, ["customerDeposits", "customerOverdrafts"]);
+    Bank.creditAccount(customerB, bankB, amount, ["customerDeposits", "customerOverdrafts"]);
+  }
