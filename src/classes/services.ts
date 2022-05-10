@@ -12,7 +12,46 @@ export const bankingSystem: SystemLookup = {
   centralbank: false,
 };
 
-
+export class BankService {
+  static deposit(a: CommercialBank, b: CommercialBank, amount: number) {
+    PaymentMethods.creditAccount(a, b, amount, [
+      "bankDeposits",
+      "bankOverdrafts",
+    ]);
+    a.decreaseReserves(amount);
+    b.increaseReserves(amount);
+  }
+  static withdraw(a: CommercialBank, b: CommercialBank, amount: number) {
+    PaymentMethods.debitAccount(a, b, amount, [
+      "bankDeposits",
+      "bankOverdrafts",
+    ]);
+    a.increaseReserves(amount)
+    b.decreaseReserves(amount)
+  }
+  static openAccount(c: Bank, b: Bank) {
+    AccountMethods.createSubordinateAccount(
+      c,
+      b,
+      0,
+      "bankDeposits",
+      "bankOverdrafts"
+    );
+  }
+  static netDues(bank: Bank) {
+    SystemMethods.netDues(bank);
+  }
+  static settleDues() {
+    SystemMethods.settleDues()
+  }
+  //if you only want services to be publically available
+  static creditAccount(bankA: Bank, bankB: Bank, amount: number) {
+    PaymentMethods.creditAccount(bankA, bankB, amount, ["bankDeposits", "bankOverdrafts"])
+  }
+  static debitAccount(bankA: Bank, bankB: Bank, amount: number) {
+    PaymentMethods.debitAccount(bankA, bankB, amount, ["bankDeposits", "bankOverdrafts"])
+  }
+}
 
 export class CustomerService {
   static deposit(a: Customer, b: CommercialBank, amount: number) {
@@ -129,46 +168,7 @@ export class CustomerService {
   }
 }
 
-export class BankService {
-  static deposit(a: CommercialBank, b: CommercialBank, amount: number) {
-    PaymentMethods.creditAccount(a, b, amount, [
-      "bankDeposits",
-      "bankOverdrafts",
-    ]);
-    a.decreaseReserves(amount);
-    b.increaseReserves(amount);
-  }
-  static withdraw(a: CommercialBank, b: CommercialBank, amount: number) {
-    PaymentMethods.debitAccount(a, b, amount, [
-      "bankDeposits",
-      "bankOverdrafts",
-    ]);
-    a.increaseReserves(amount)
-    b.decreaseReserves(amount)
-  }
-  static openAccount(c: Bank, b: Bank) {
-    AccountMethods.createSubordinateAccount(
-      c,
-      b,
-      0,
-      "bankDeposits",
-      "bankOverdrafts"
-    );
-  }
-  static netDues(bank: Bank) {
-    SystemMethods.netDues(bank);
-  }
-  static settleDues() {
-    SystemMethods.settleDues()
-  }
-  //if you only want services to be publically available
-  static creditAccount(bankA: Bank, bankB: Bank, amount: number) {
-    PaymentMethods.creditAccount(bankA, bankB, amount, ["bankDeposits", "bankOverdrafts"])
-  }
-  static debitAccount(bankA: Bank, bankB: Bank, amount: number) {
-    PaymentMethods.debitAccount(bankA, bankB, amount, ["bankDeposits", "bankOverdrafts"])
-  }
-}
+
 
 export class ClearingHouseService {
   static settleDues() {

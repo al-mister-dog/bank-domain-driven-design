@@ -6,7 +6,7 @@ import {
   customerLiabilities,
   customerAssets,
 } from "./fixtures";
-import { SystemMethods, systemCheck } from "./systems";
+
 import {
   IBank,
   Category,
@@ -16,7 +16,6 @@ import {
   IBankLookup,
   ICustomerLookup,
 } from "./types";
-import { ClearingHouseService } from "./services";
 
 export const bankLookup: IBankLookup = {};
 export const customerLookup: ICustomerLookup = {};
@@ -74,6 +73,20 @@ export class Bank implements IBank {
     return index;
   }
 
+  increaseInstrument(
+    id: string,
+    category: CategoryKey,
+    instrument: InstrumentKey,
+    amount: number
+  ) {
+    if (!this.isAccount(id, category, instrument)) {
+      this.createInstrumentAccount(id, category, instrument, amount);
+    } else {
+      const index = this.findAccountIndex(id, category, instrument);
+    this[category][instrument][index].amount += amount;
+    }
+  }
+
   decreaseInstrument(
     id: string,
     category: CategoryKey,
@@ -83,42 +96,15 @@ export class Bank implements IBank {
     const index = this.findAccountIndex(id, category, instrument);
     this[category][instrument][index].amount -= amount;
   }
-  increaseInstrument(
-    id: string,
-    category: CategoryKey,
-    instrument: InstrumentKey,
-    amount: number
-  ) {
-    // const index = this.findAccountIndex(id, category, instrument);
-    // this[category][instrument][index].amount += amount;
-
-    if (!this.isAccount(id, category, instrument)) {
-      this.createInstrumentAccount(id, category, instrument, amount);
-    } else {
-      const index = this.findAccountIndex(id, category, instrument);
-    this[category][instrument][index].amount += amount;
-    }
-  }
-
-  increaseDue(id: string, category: CategoryKey, amount: number) {
-    if (!this.isAccount(id, category, "dues")) {
-      this.createInstrumentAccount(id, category, "dues", amount);
-    } else {
-      const index = this.findAccountIndex(id, category, "dues");
-      this[category].dues[index].amount += amount;
-    }
-  }
 
   increaseReserves(amount: number) {
     this.reserves += amount
   }
+
   decreaseReserves(amount: number) {
     this.reserves -= amount
   }
 
-  // netDues() {
-  //   SystemMethods.netDues(this);
-  // }
 }
 
 export class CommercialBank extends Bank {

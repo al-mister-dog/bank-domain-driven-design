@@ -243,7 +243,7 @@ describe("balance sheet accounting", () => {
       expect(clearinghouse.accounts[1].balance).toBe(-80);
     });
     it("nets dues in banking service", () => {
-      const { clearinghouse, bank1, bank2, customer1, customer2 } =
+      const { bank1, bank2, customer1, customer2 } =
         createBanksAndCustomers();
       CustomerService.openAccount(customer1, bank1);
       CustomerService.openAccount(customer2, bank2);

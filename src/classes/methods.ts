@@ -31,10 +31,13 @@ export class PaymentMethods {
     instruments: InstrumentKey[]
   ) {
     const id = `${a.id}-${b.id}`;
+
     const aAccount = a.accounts.find((account: any) => account.id === id);
     const bAccount = b.accounts.find((account: any) => account.id === id);
+
     aAccount.balance -= amount;
     bAccount.balance -= amount;
+
     const [creditInstrument, debtInstrument] = instruments;
     PaymentMethods.mapBalance(
       a,
@@ -83,7 +86,6 @@ export class PaymentMethods {
 export class AccountMethods {
   static createAccount(a: Bank, b: Bank, creditInstrument: InstrumentKey) {
     const id = `${a.id}-${b.id}`;
-
     a.accounts = [...a.accounts, { id, type: creditInstrument, balance: 0 }];
     b.accounts = [...b.accounts, { id, type: creditInstrument, balance: 0 }];
   }
