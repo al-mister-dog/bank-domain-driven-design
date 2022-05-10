@@ -1,5 +1,5 @@
 import { Bank, bankLookup } from "./instances";
-import { PaymentMethods } from "./static-methods";
+import { PaymentMethods } from "./methods";
 
 type SystemType = {
   increaseDues(bankA: Bank, bankB: Bank, amount: number): void;
@@ -19,6 +19,10 @@ export class System {
     if (sys === "clearinghouse") {
       SystemMethods = new ClearingHouseSystem();
       systemCheck = "clearinghouse";
+    }
+    if (sys === "none") {
+      SystemMethods = new NoSystem();
+      systemCheck = "none";
     }
   }
 }
@@ -141,4 +145,10 @@ class ClearingHouseSystem extends AbstractSystem {
       });
     }
   }
+}
+
+class NoSystem extends AbstractSystem {
+  increaseDues(bankA: Bank, bankB: Bank, amount: number): void {}
+  netDues(bank: Bank): void {}
+  settleDues(): void {}
 }
