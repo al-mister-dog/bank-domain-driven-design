@@ -1,5 +1,5 @@
 import { Bank } from "./instances";
-import { SystemMethods } from "./system-methods";
+import { SystemMethods } from "./systems";
 import { InstrumentKey } from "./types";
 
 export class PaymentMethods {

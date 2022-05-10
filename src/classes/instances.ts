@@ -4,7 +4,7 @@ import {
   clearinghouseAssets,
   clearinghouseLiabilities,
 } from "./fixtures";
-import { SystemMethods, systemCheck } from "./system-methods";
+import { SystemMethods, systemCheck } from "./systems";
 import {
   IBank,
   Category,
@@ -87,8 +87,15 @@ export class Bank implements IBank {
     instrument: InstrumentKey,
     amount: number
   ) {
-    const index = this.findAccountIndex(id, category, instrument);
+    // const index = this.findAccountIndex(id, category, instrument);
+    // this[category][instrument][index].amount += amount;
+
+    if (!this.isAccount(id, category, instrument)) {
+      this.createInstrumentAccount(id, category, instrument, amount);
+    } else {
+      const index = this.findAccountIndex(id, category, instrument);
     this[category][instrument][index].amount += amount;
+    }
   }
 
   increaseDue(id: string, category: CategoryKey, amount: number) {

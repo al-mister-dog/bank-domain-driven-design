@@ -1,5 +1,5 @@
 import { Bank, bankLookup, CommercialBank, Customer } from "./instances";
-import { SystemMethods } from "./system-methods";
+import { SystemMethods } from "./systems";
 import { PaymentMethods, AccountMethods } from "./methods";
 
 interface SystemLookup {
@@ -20,16 +20,16 @@ export class CustomerService {
       "customerDeposits",
       "customerOverdrafts",
     ]);
-    a.reserves -= amount;
-    b.reserves += amount;
+    a.decreaseReserves(amount)
+    b.increaseReserves(amount)
   }
   static withdraw(a: Customer, b: CommercialBank, amount: number) {
     PaymentMethods.debitAccount(a, b, amount, [
       "customerDeposits",
       "customerOverdrafts",
     ]);
-    a.reserves += amount;
-    b.reserves -= amount;
+    a.increaseReserves(amount)
+    b.decreaseReserves(amount)
   }
   static automateTransferFromAccount(c: Customer) {
     const accountWithMostCash = c.accounts.sort((acc1, acc2) => {
@@ -135,16 +135,16 @@ export class BankService {
       "bankDeposits",
       "bankOverdrafts",
     ]);
-    a.reserves -= amount;
-    b.reserves += amount;
+    a.decreaseReserves(amount);
+    b.increaseReserves(amount);
   }
   static withdraw(a: CommercialBank, b: CommercialBank, amount: number) {
     PaymentMethods.debitAccount(a, b, amount, [
       "bankDeposits",
       "bankOverdrafts",
     ]);
-    a.reserves += amount;
-    b.reserves -= amount;
+    a.increaseReserves(amount)
+    b.decreaseReserves(amount)
   }
   static openAccount(c: Bank, b: Bank) {
     AccountMethods.createSubordinateAccount(
@@ -158,16 +158,15 @@ export class BankService {
   static netDues(bank: Bank) {
     SystemMethods.netDues(bank);
   }
-
+  static settleDues() {
+    SystemMethods.settleDues()
+  }
   //if you only want services to be publically available
   static creditAccount(bankA: Bank, bankB: Bank, amount: number) {
     PaymentMethods.creditAccount(bankA, bankB, amount, ["bankDeposits", "bankOverdrafts"])
   }
   static debitAccount(bankA: Bank, bankB: Bank, amount: number) {
     PaymentMethods.debitAccount(bankA, bankB, amount, ["bankDeposits", "bankOverdrafts"])
-  }
-  static settleDues() {
-    SystemMethods.settleDues()
   }
 }
 

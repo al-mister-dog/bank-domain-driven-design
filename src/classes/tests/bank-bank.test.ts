@@ -3,7 +3,7 @@ import "@testing-library/jest-dom";
 import { CommercialBank } from "../instances";
 
 import { BankService } from "../services";
-import { System } from "../system-methods";
+import { System } from "../systems";
 function createBankAndCustomer() {
   System.setSystem("correspondent")
   const bank1 = new CommercialBank(

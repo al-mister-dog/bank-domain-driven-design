@@ -1,5 +1,5 @@
 import "@testing-library/jest-dom";
-import { System } from "../system-methods";
+import { System } from "../systems";
 
 import { Customer, CommercialBank } from "../instances";
 import { CustomerService } from "../services";

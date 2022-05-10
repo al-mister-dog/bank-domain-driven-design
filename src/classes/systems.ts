@@ -34,8 +34,8 @@ abstract class AbstractSystem {
 }
 class CorrespondentSystem extends AbstractSystem {
   increaseDues(bankA: Bank, bankB: Bank, amount: number) {
-    bankA.increaseDue(bankB.id, "liabilities", amount);
-    bankB.increaseDue(bankA.id, "assets", amount);
+    bankA.increaseInstrument(bankB.id, "liabilities", "dues", amount);
+    bankB.increaseInstrument(bankA.id, "assets", "dues", amount);
   }
   netDues(bank: Bank): void {
     bank.assets.dues.forEach((thisDue) => {
@@ -75,10 +75,10 @@ class CorrespondentSystem extends AbstractSystem {
 
 class ClearingHouseSystem extends AbstractSystem {
   increaseDues(bankA: Bank, bankB: Bank, amount: number) {
-    bankA.increaseDue(bankLookup["clearinghouse"].id, "liabilities", amount);
-    bankLookup["clearinghouse"].increaseDue(bankA.id, "assets", amount);
-    bankB.increaseDue(bankLookup["clearinghouse"].id, "assets", amount);
-    bankLookup["clearinghouse"].increaseDue(bankB.id, "liabilities", amount);
+    bankA.increaseInstrument(bankLookup["clearinghouse"].id, "liabilities", "dues", amount);
+    bankLookup["clearinghouse"].increaseInstrument(bankA.id, "assets", "dues", amount);
+    bankB.increaseInstrument(bankLookup["clearinghouse"].id, "assets", "dues", amount);
+    bankLookup["clearinghouse"].increaseInstrument(bankB.id, "liabilities", "dues", amount);
   }
 
   netDues(bank: Bank): void {

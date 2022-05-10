@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
 import { Customer, CommercialBank } from "../instances";
 import { CustomerService } from "../services";
-import { System } from "../system-methods";
+import { System } from "../systems";
 
 function createLoanSystem() {
   System.setSystem("none")

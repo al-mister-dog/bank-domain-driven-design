@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
 import { Customer, CommercialBank, ClearingHouse } from "../instances";
 import { PaymentMethods } from "../methods";
-import { System, systemCheck } from "../system-methods";
+import { System, systemCheck } from "../systems";
 import { CustomerService, BankService, ClearingHouseService } from "../services";
 
 function createBanksAndCustomers() {
