@@ -194,10 +194,10 @@ export class ClearingHouseService {
       });
     }
   }
-  static openAccount(c: Bank, b: Bank) {
+  static openAccount(bankA: Bank, bankB: Bank) {
     AccountMethods.createSubordinateAccount(
-      c,
-      b,
+      bankA,
+      bankB,
       0,
       "chCertificates",
       "chOverdrafts"

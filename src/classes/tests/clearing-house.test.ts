@@ -2,7 +2,7 @@ import "@testing-library/jest-dom";
 import { Customer, CommercialBank, ClearingHouse } from "../instances";
 import { PaymentMethods } from "../methods";
 import { System, systemCheck } from "../system-methods";
-import { CustomerService, BankService } from "../services";
+import { CustomerService, BankService, ClearingHouseService } from "../services";
 
 function createBanksAndCustomers() {
   System.setSystem("clearinghouse");
@@ -11,8 +11,8 @@ function createBanksAndCustomers() {
   const bank2 = new CommercialBank("Bank2");
   const customer1 = new Customer("CUSTOMER1");
   const customer2 = new Customer("CUSTOMER2");
-  // ClearingHouseService.openAccount(this, bankLookup["clearinghouse"]);
-  // ClearingHouseService.openAccount(this, bankLookup["clearinghouse"]);
+  ClearingHouseService.openAccount(bank1, clearinghouse);
+  ClearingHouseService.openAccount(bank2, clearinghouse);
   return { clearinghouse, bank1, bank2, customer1, customer2 };
 }
 

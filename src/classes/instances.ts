@@ -122,9 +122,6 @@ export class CommercialBank extends Bank {
   ) {
     super(id, assets, liabilities, accounts, reserves);
     bankLookup[id] = this;
-    if (systemCheck === "clearinghouse") {
-      ClearingHouseService.openAccount(this, bankLookup["clearinghouse"]);
-    }
   }
 }
 
@@ -153,6 +150,6 @@ export class ClearingHouse extends Bank {
     public reserves: number = 0
   ) {
     super(id, assets, liabilities, accounts, reserves);
-    bankLookup["clearinghouse"] = this;
+    bankLookup[id] = this;
   }
 }
