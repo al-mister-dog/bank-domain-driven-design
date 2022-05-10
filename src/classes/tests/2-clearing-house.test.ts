@@ -4,11 +4,11 @@
  */
 import "@testing-library/jest-dom";
 
-import { Customer, CommercialBank, Bank, ClearingHouse, SystemManager } from "../classes2";
+import { Customer, CommercialBank, Bank, ClearingHouse,  } from "../classes2";
 import { commercialAssets, commercialLiabilities, balances } from "../fixtures";
+import { StaticMethods, CustomerService, CommercialBankService } from "../staticMethods";
 function createBanksAndCustomers() {
-  SystemManager.setSystem("clearinghouse")
-  Bank.setBankingSystem("clearinghouse");
+  StaticMethods.setBankingSystem("clearinghouse");
   const clearinghouse = new ClearingHouse(
     "clearinghouse",
     { ...commercialAssets },
@@ -52,32 +52,39 @@ function createBanksAndCustomers() {
 describe("set up correspondent system", () => {
   it("sets system to correspondent banking", () => {
     createBanksAndCustomers();
-    const system = Bank.getBankingSystem();
+    const system = StaticMethods.getBankingSystem();
     expect(system.clearinghouse).toBe(true);
   });
 });
 describe("balance sheet accounting", () => {
   describe("each customer has different bank", () => {
     it("creates an account accessible to both customer and bank on openAccount", () => {
-      const { bank1, bank2, customer1, customer2 } = createBanksAndCustomers();
-      Customer.openAccount(customer1, bank1);
-      Customer.openAccount(customer2, bank2);
-      CommercialBank.openAccount(bank1, bank2);
-      CommercialBank.openAccount(bank2, bank1);
+      const { clearinghouse, bank1, bank2, customer1, customer2 } =
+        createBanksAndCustomers();
+      CustomerService.openAccount(customer1, bank1);
+      CustomerService.openAccount(customer2, bank2);
+      CommercialBankService.openAccount(bank1, bank2);
+      CommercialBankService.openAccount(bank2, bank1);
       expect(customer1.accounts.length).toBe(1);
       expect(customer2.accounts.length).toBe(1);
       expect(bank1.accounts.length).toBe(4);
       expect(bank2.accounts.length).toBe(4);
+      expect(bank1.accounts.map((account) => account.id)).toEqual([
+        `${bank1.id}-${clearinghouse.id}`,
+        `${customer1.id}-${bank1.id}`,
+        `${bank1.id}-${bank2.id}`,
+        `${bank2.id}-${bank1.id}`,
+      ]);
     });
     it("increase bank1 liabilities dues to customer1 on transfer", () => {
       const { clearinghouse, bank1, bank2, customer1, customer2 } =
         createBanksAndCustomers();
-      Customer.openAccount(customer1, bank1);
-      Customer.openAccount(customer2, bank2);
-      CommercialBank.openAccount(bank1, bank2);
-      CommercialBank.openAccount(bank2, bank1);
-      Customer.deposit(customer1, bank1, 100);
-      Customer.transfer(customer1, customer2, 50);
+      CustomerService.openAccount(customer1, bank1);
+      CustomerService.openAccount(customer2, bank2);
+      CommercialBankService.openAccount(bank1, bank2);
+      CommercialBankService.openAccount(bank2, bank1);
+      CustomerService.deposit(customer1, bank1, 100);
+      CustomerService.transfer(customer1, customer2, 50);
       expect(bank1.liabilities.dues[0]).toEqual({
         id: clearinghouse.id,
         type: "dues",
@@ -87,12 +94,12 @@ describe("balance sheet accounting", () => {
     it("increase bank2 assets dues to customer2 on transfer", () => {
       const { clearinghouse, bank1, bank2, customer1, customer2 } =
         createBanksAndCustomers();
-      Customer.openAccount(customer1, bank1);
-      Customer.openAccount(customer2, bank2);
-      CommercialBank.openAccount(bank1, bank2);
-      CommercialBank.openAccount(bank2, bank1);
-      Customer.deposit(customer1, bank1, 100);
-      Customer.transfer(customer1, customer2, 50);
+      CustomerService.openAccount(customer1, bank1);
+      CustomerService.openAccount(customer2, bank2);
+      CommercialBankService.openAccount(bank1, bank2);
+      CommercialBankService.openAccount(bank2, bank1);
+      CustomerService.deposit(customer1, bank1, 100);
+      CustomerService.transfer(customer1, customer2, 50);
       expect(bank2.assets.dues[0]).toEqual({
         id: clearinghouse.id,
         type: "dues",
@@ -101,16 +108,16 @@ describe("balance sheet accounting", () => {
     });
     it("accumulates dues", () => {
       const { bank1, bank2, customer1, customer2 } = createBanksAndCustomers();
-      Customer.openAccount(customer1, bank1);
-      Customer.openAccount(customer2, bank2);
-      CommercialBank.openAccount(bank1, bank2);
-      CommercialBank.openAccount(bank2, bank1);
-      Customer.deposit(customer1, bank1, 100);
-      Customer.deposit(customer2, bank2, 100);
-      Customer.transfer(customer1, customer2, 10);
-      Customer.transfer(customer1, customer2, 20);
-      Customer.transfer(customer2, customer1, 30);
-      Customer.transfer(customer2, customer1, 40);
+      CustomerService.openAccount(customer1, bank1);
+      CustomerService.openAccount(customer2, bank2);
+      CommercialBankService.openAccount(bank1, bank2);
+      CommercialBankService.openAccount(bank2, bank1);
+      CustomerService.deposit(customer1, bank1, 100);
+      CustomerService.deposit(customer2, bank2, 100);
+      CustomerService.transfer(customer1, customer2, 10);
+      CustomerService.transfer(customer1, customer2, 20);
+      CustomerService.transfer(customer2, customer1, 30);
+      CustomerService.transfer(customer2, customer1, 40);
       expect(bank1.liabilities.dues[0].amount).toBe(30);
       expect(bank2.liabilities.dues[0].amount).toBe(70);
       expect(bank1.assets.dues[0].amount).toBe(70);
@@ -118,16 +125,16 @@ describe("balance sheet accounting", () => {
     });
     it("nets banks' dues", () => {
       const { bank1, bank2, customer1, customer2 } = createBanksAndCustomers();
-      Customer.openAccount(customer1, bank1);
-      Customer.openAccount(customer2, bank2);
-      CommercialBank.openAccount(bank1, bank2);
-      CommercialBank.openAccount(bank2, bank1);
-      Customer.deposit(customer1, bank1, 100);
-      Customer.deposit(customer2, bank2, 100);
-      Customer.transfer(customer1, customer2, 10);
-      Customer.transfer(customer1, customer2, 20);
-      Customer.transfer(customer2, customer1, 30);
-      Customer.transfer(customer2, customer1, 40);
+      CustomerService.openAccount(customer1, bank1);
+      CustomerService.openAccount(customer2, bank2);
+      CommercialBankService.openAccount(bank1, bank2);
+      CommercialBankService.openAccount(bank2, bank1);
+      CustomerService.deposit(customer1, bank1, 100);
+      CustomerService.deposit(customer2, bank2, 100);
+      CustomerService.transfer(customer1, customer2, 10);
+      CustomerService.transfer(customer1, customer2, 20);
+      CustomerService.transfer(customer2, customer1, 30);
+      CustomerService.transfer(customer2, customer1, 40);
       bank1.netDues();
       bank2.netDues();
       expect(bank1.liabilities.dues[0].amount).toBe(0);
@@ -138,16 +145,16 @@ describe("balance sheet accounting", () => {
     it("nets clearinghouse's dues", () => {
       const { clearinghouse, bank1, bank2, customer1, customer2 } =
         createBanksAndCustomers();
-      Customer.openAccount(customer1, bank1);
-      Customer.openAccount(customer2, bank2);
-      CommercialBank.openAccount(bank1, bank2);
-      CommercialBank.openAccount(bank2, bank1);
-      Customer.deposit(customer1, bank1, 100);
-      Customer.deposit(customer2, bank2, 100);
-      Customer.transfer(customer1, customer2, 10);
-      Customer.transfer(customer1, customer2, 20);
-      Customer.transfer(customer2, customer1, 30);
-      Customer.transfer(customer2, customer1, 40);
+      CustomerService.openAccount(customer1, bank1);
+      CustomerService.openAccount(customer2, bank2);
+      CommercialBankService.openAccount(bank1, bank2);
+      CommercialBankService.openAccount(bank2, bank1);
+      CustomerService.deposit(customer1, bank1, 100);
+      CustomerService.deposit(customer2, bank2, 100);
+      CustomerService.transfer(customer1, customer2, 10);
+      CustomerService.transfer(customer1, customer2, 20);
+      CustomerService.transfer(customer2, customer1, 30);
+      CustomerService.transfer(customer2, customer1, 40);
       bank1.netDues();
       bank2.netDues();
       expect(clearinghouse.liabilities.dues[0]).toEqual({
@@ -173,104 +180,118 @@ describe("balance sheet accounting", () => {
     });
     it("increases bank1 assets and balance in account with clearinghouse", () => {
       const { bank1, bank2, customer1, customer2 } = createBanksAndCustomers();
-      Customer.openAccount(customer1, bank1);
-      Customer.openAccount(customer2, bank2);
-      // CommercialBank.openAccount(bank1, bank2);
-      // CommercialBank.openAccount(bank2, bank1);
-      Customer.deposit(customer1, bank1, 100);
-      Customer.deposit(customer2, bank2, 100);
-      Customer.transfer(customer1, customer2, 10);
-      Customer.transfer(customer1, customer2, 20);
-      Customer.transfer(customer2, customer1, 30);
-      Customer.transfer(customer2, customer1, 40);
+      CustomerService.openAccount(customer1, bank1);
+      CustomerService.openAccount(customer2, bank2);
+      // CommercialBankService.openAccount(bank1, bank2);
+      // CommercialBankService.openAccount(bank2, bank1);
+      CustomerService.deposit(customer1, bank1, 100);
+      CustomerService.deposit(customer2, bank2, 100);
+      CustomerService.transfer(customer1, customer2, 10);
+      CustomerService.transfer(customer1, customer2, 20);
+      CustomerService.transfer(customer2, customer1, 30);
+      CustomerService.transfer(customer2, customer1, 40);
       bank1.netDues();
       bank2.netDues();
-      Bank.newSettleDues();
+      StaticMethods.newSettleDues();
       expect(bank1.assets.chCertificates[0].amount).toBe(40);
       expect(bank1.accounts[0].balance).toBe(40);
     });
     it("increases bank2 liabilities and balance in account with clearinghouse", () => {
       const { bank1, bank2, customer1, customer2 } = createBanksAndCustomers();
-      Customer.openAccount(customer1, bank1);
-      Customer.openAccount(customer2, bank2);
-      CommercialBank.openAccount(bank1, bank2);
-      CommercialBank.openAccount(bank2, bank1);
-      Customer.deposit(customer1, bank1, 100);
-      Customer.deposit(customer2, bank2, 100);
-      Customer.transfer(customer1, customer2, 10);
-      Customer.transfer(customer1, customer2, 20);
-      Customer.transfer(customer2, customer1, 30);
-      Customer.transfer(customer2, customer1, 40);
+      CustomerService.openAccount(customer1, bank1);
+      CustomerService.openAccount(customer2, bank2);
+      CommercialBankService.openAccount(bank1, bank2);
+      CommercialBankService.openAccount(bank2, bank1);
+      CustomerService.deposit(customer1, bank1, 100);
+      CustomerService.deposit(customer2, bank2, 100);
+      CustomerService.transfer(customer1, customer2, 10);
+      CustomerService.transfer(customer1, customer2, 20);
+      CustomerService.transfer(customer2, customer1, 30);
+      CustomerService.transfer(customer2, customer1, 40);
       bank1.netDues();
       bank2.netDues();
-      Bank.newSettleDues();
+      StaticMethods.newSettleDues();
       expect(bank2.liabilities.chOverdrafts[0].amount).toBe(40);
-      console.log(bank2.accounts)
       expect(bank2.accounts[0].balance).toBe(-40);
     });
     it("increases clearinghouse liabilities and balance in account with bank1", () => {
       const { clearinghouse, bank1, bank2, customer1, customer2 } =
         createBanksAndCustomers();
-      Customer.openAccount(customer1, bank1);
-      Customer.openAccount(customer2, bank2);
-      Customer.deposit(customer1, bank1, 100);
-      Customer.deposit(customer2, bank2, 100);
-      Customer.transfer(customer1, customer2, 10);
-      Customer.transfer(customer1, customer2, 20);
-      Customer.transfer(customer2, customer1, 30);
-      Customer.transfer(customer2, customer1, 40);
+      CustomerService.openAccount(customer1, bank1);
+      CustomerService.openAccount(customer2, bank2);
+      CustomerService.deposit(customer1, bank1, 100);
+      CustomerService.deposit(customer2, bank2, 100);
+      CustomerService.transfer(customer1, customer2, 10);
+      CustomerService.transfer(customer1, customer2, 20);
+      CustomerService.transfer(customer2, customer1, 30);
+      CustomerService.transfer(customer2, customer1, 40);
       bank1.netDues();
       bank2.netDues();
-      Bank.newSettleDues();
+      StaticMethods.newSettleDues();
       expect(clearinghouse.liabilities.chCertificates[0].amount).toBe(40);
       expect(clearinghouse.accounts[0].balance).toBe(40);
     });
     it("increases clearinghouse assets and balance in account with bank2", () => {
       const { clearinghouse, bank1, bank2, customer1, customer2 } =
         createBanksAndCustomers();
-      Customer.openAccount(customer1, bank1);
-      Customer.openAccount(customer2, bank2);
-      CommercialBank.openAccount(bank1, bank2);
-      CommercialBank.openAccount(bank2, bank1);
-      Customer.deposit(customer1, bank1, 100);
-      Customer.deposit(customer2, bank2, 100);
-      Customer.transfer(customer1, customer2, 10);
-      Customer.transfer(customer1, customer2, 20);
-      Customer.transfer(customer2, customer1, 30);
-      Customer.transfer(customer2, customer1, 40);
+      CustomerService.openAccount(customer1, bank1);
+      CustomerService.openAccount(customer2, bank2);
+      CommercialBankService.openAccount(bank1, bank2);
+      CommercialBankService.openAccount(bank2, bank1);
+      CustomerService.deposit(customer1, bank1, 100);
+      CustomerService.deposit(customer2, bank2, 100);
+      CustomerService.transfer(customer1, customer2, 10);
+      CustomerService.transfer(customer1, customer2, 20);
+      CustomerService.transfer(customer2, customer1, 30);
+      CustomerService.transfer(customer2, customer1, 40);
       bank1.netDues();
       bank2.netDues();
-      Bank.newSettleDues();
+      StaticMethods.newSettleDues();
       expect(clearinghouse.assets.chOverdrafts[1].amount).toBe(40);
       expect(clearinghouse.accounts[1].balance).toBe(-40);
     });
     it("aincreases clearinghouse assets and balance in account with bank2", () => {
       const { clearinghouse, bank1, bank2, customer1, customer2 } =
         createBanksAndCustomers();
-      Customer.openAccount(customer1, bank1);
-      Customer.openAccount(customer2, bank2);
-      CommercialBank.openAccount(bank1, bank2);
-      CommercialBank.openAccount(bank2, bank1);
-      Customer.deposit(customer1, bank1, 100);
-      Customer.deposit(customer2, bank2, 100);
-      Customer.transfer(customer1, customer2, 10);
-      Customer.transfer(customer1, customer2, 20);
-      Customer.transfer(customer2, customer1, 30);
-      Customer.transfer(customer2, customer1, 40);
+      CustomerService.openAccount(customer1, bank1);
+      CustomerService.openAccount(customer2, bank2);
+      CommercialBankService.openAccount(bank1, bank2);
+      CommercialBankService.openAccount(bank2, bank1);
+      CustomerService.deposit(customer1, bank1, 100);
+      CustomerService.deposit(customer2, bank2, 100);
+      CustomerService.transfer(customer1, customer2, 10);
+      CustomerService.transfer(customer1, customer2, 20);
+      CustomerService.transfer(customer2, customer1, 30);
+      CustomerService.transfer(customer2, customer1, 40);
       bank1.netDues();
       bank2.netDues();
-      Bank.newSettleDues();
+      StaticMethods.newSettleDues();
       expect(clearinghouse.assets.chOverdrafts[1].amount).toBe(40);
       expect(clearinghouse.accounts[1].balance).toBe(-40);
-      Customer.transfer(customer1, customer2, 10);
-      Customer.transfer(customer1, customer2, 20);
-      Customer.transfer(customer2, customer1, 30);
-      Customer.transfer(customer2, customer1, 40);
+      CustomerService.transfer(customer1, customer2, 10);
+      CustomerService.transfer(customer1, customer2, 20);
+      CustomerService.transfer(customer2, customer1, 30);
+      CustomerService.transfer(customer2, customer1, 40);
       bank1.netDues();
       bank2.netDues();
-      Bank.newSettleDues();
+      StaticMethods.newSettleDues();
       expect(clearinghouse.assets.chOverdrafts[1].amount).toBe(80);
       expect(clearinghouse.accounts[1].balance).toBe(-80);
+    });
+    it("nets dues in banking service", () => {
+      const { clearinghouse, bank1, bank2, customer1, customer2 } =
+        createBanksAndCustomers();
+      CustomerService.openAccount(customer1, bank1);
+      CustomerService.openAccount(customer2, bank2);
+      CustomerService.deposit(customer1, bank1, 100);
+      CustomerService.deposit(customer2, bank2, 100);
+      CustomerService.transfer(customer1, customer2, 10);
+      CustomerService.transfer(customer1, customer2, 20);
+      CustomerService.transfer(customer2, customer1, 30);
+      CustomerService.transfer(customer2, customer1, 40);
+      bank1.netDues();
+      bank2.netDues();
+      StaticMethods.newSettleDues();
     });
   });
 });
