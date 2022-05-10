@@ -1,4 +1,4 @@
-import { IBank } from "../../classes/classes2";
+import { IBank } from "../../classes/instances";
 const BalanceSheet = ({ bank }: { bank: IBank }) => {
   return (
     <div>

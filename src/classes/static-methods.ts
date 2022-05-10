@@ -1,10 +1,10 @@
 import {
   Bank,
   bankLookup,
-  ClearingHouse,
   CommercialBank,
   Customer,
-} from "./classes2";
+} from "./instances";
+import { SystemMethods } from "./banking-system-methods";
 import { InstrumentKey } from "./types";
 
 interface SystemLookup {
@@ -17,44 +17,26 @@ export const bankingSystem: SystemLookup = {
   centralbank: false,
 };
 
-export class StaticMethods {
-  static setBankingSystem(type: string) {
-    bankingSystem[type] = true;
-  }
-  static getBankingSystem() {
-    return bankingSystem;
-  }
-  static handleSystem(bankA: Bank, bankB: Bank, amount: number) {
-    if (bankingSystem.correspondent) {
-      bankA.increaseDues(bankB.id, "liabilities", amount);
-      bankB.increaseDues(bankA.id, "assets", amount);
-    }
-    if (bankingSystem.clearinghouse) {
-      bankA.increaseDues(bankLookup["clearinghouse"].id, "liabilities", amount);
-      bankLookup["clearinghouse"].increaseDues(bankA.id, "assets", amount);
-      bankB.increaseDues(bankLookup["clearinghouse"].id, "assets", amount);
-      bankLookup["clearinghouse"].increaseDues(bankB.id, "liabilities", amount);
-    }
-  }
-  static createAccount(a: Bank, b: Bank, creditInstrument: InstrumentKey) {
-    const id = `${a.id}-${b.id}`;
-
-    a.accounts = [...a.accounts, { id, type: creditInstrument, balance: 0 }];
-    b.accounts = [...b.accounts, { id, type: creditInstrument, balance: 0 }];
-  }
-
-  static createSubordinateAccount(
+export class PaymentMethods {
+  static creditAccount(
     a: Bank,
     b: Bank,
     amount: number,
-    creditInstrument: InstrumentKey,
-    debtInstrument: InstrumentKey
+    instruments: InstrumentKey[]
   ) {
-    a.createInstrumentAccount(b.id, "assets", creditInstrument, amount);
-    a.createInstrumentAccount(b.id, "liabilities", debtInstrument, 0);
-    b.createInstrumentAccount(a.id, "assets", debtInstrument, 0);
-    b.createInstrumentAccount(a.id, "liabilities", creditInstrument, amount);
-    this.createAccount(a, b, creditInstrument);
+    const id = `${a.id}-${b.id}`;
+    const aAccount = a.accounts.find((account: any) => account.id === id);
+    const bAccount = b.accounts.find((account: any) => account.id === id);
+    aAccount.balance += amount;
+    bAccount.balance += amount;
+    const [creditInstrument, debtInstrument] = instruments;
+    PaymentMethods.mapBalance(
+      a,
+      b,
+      creditInstrument,
+      debtInstrument,
+      aAccount.balance
+    );
   }
   static debitAccount(
     a: Bank,
@@ -68,21 +50,13 @@ export class StaticMethods {
     aAccount.balance -= amount;
     bAccount.balance -= amount;
     const [creditInstrument, debtInstrument] = instruments;
-    StaticMethods.mapBalance(a, b, creditInstrument, debtInstrument, aAccount.balance);
-  }
-  static creditAccount(
-    a: Bank,
-    b: Bank,
-    amount: number,
-    instruments: InstrumentKey[]
-  ) {
-    const id = `${a.id}-${b.id}`;
-    const aAccount = a.accounts.find((account: any) => account.id === id);
-    const bAccount = b.accounts.find((account: any) => account.id === id);
-    aAccount.balance += amount;
-    bAccount.balance += amount;
-    const [creditInstrument, debtInstrument] = instruments;
-    StaticMethods.mapBalance(a, b, creditInstrument, debtInstrument, aAccount.balance);
+    PaymentMethods.mapBalance(
+      a,
+      b,
+      creditInstrument,
+      debtInstrument,
+      aAccount.balance
+    );
   }
   static mapBalance(
     a: Bank,
@@ -108,37 +82,9 @@ export class StaticMethods {
       b.setAccount(a.id, "liabilities", creditInstrument, 0);
     }
   }
-  static newSettleDues() {
-    if (bankingSystem.clearinghouse) {
-      ClearingHouseService.settleDues();
-    } else {
-      for (const bank in bankLookup) {
-        bankLookup[bank].liabilities.dues.forEach((due) => {
-          CommercialBankService.creditAccount(
-            bankLookup[due.id],
-            bankLookup[bank],
-            due.amount
-          );
-          this.clearDues(bankLookup[bank], bankLookup[due.id]);
-        });
-      }
-    }
-  }
-  static settleDues(a: Bank, b: Bank) {
-    const aOwesB = a.liabilities.dues.find(
-      (due) => due.id === b.id && due.amount > 0
-    );
-    const bOwesA = b.liabilities.dues.find(
-      (due) => due.id === a.id && due.amount > 0
-    );
 
-    if (aOwesB) {
-      CommercialBankService.creditAccount(b, a, aOwesB.amount);
-    } else if (bOwesA) {
-      CommercialBankService.creditAccount(a, b, bOwesA.amount);
-    }
-    this.clearDues(a, b);
-    this.clearDues(b, a);
+  static settleDues() {
+    SystemMethods.settleDues()
   }
 
   static clearDues(a: Bank, b: Bank) {
@@ -147,9 +93,33 @@ export class StaticMethods {
   }
 }
 
+export class AccountMethods {
+  static createAccount(a: Bank, b: Bank, creditInstrument: InstrumentKey) {
+    const id = `${a.id}-${b.id}`;
+
+    a.accounts = [...a.accounts, { id, type: creditInstrument, balance: 0 }];
+    b.accounts = [...b.accounts, { id, type: creditInstrument, balance: 0 }];
+  }
+
+  static createSubordinateAccount(
+    a: Bank,
+    b: Bank,
+    amount: number,
+    creditInstrument: InstrumentKey,
+    debtInstrument: InstrumentKey
+  ) {
+    a.createInstrumentAccount(b.id, "assets", creditInstrument, amount);
+    a.createInstrumentAccount(b.id, "liabilities", debtInstrument, 0);
+    b.createInstrumentAccount(a.id, "assets", debtInstrument, 0);
+    b.createInstrumentAccount(a.id, "liabilities", creditInstrument, amount);
+    AccountMethods.createAccount(a, b, creditInstrument);
+  }
+}
+
+
 export class CustomerService {
   static deposit(a: Customer, b: CommercialBank, amount: number) {
-    StaticMethods.creditAccount(a, b, amount, [
+    PaymentMethods.creditAccount(a, b, amount, [
       "customerDeposits",
       "customerOverdrafts",
     ]);
@@ -157,7 +127,7 @@ export class CustomerService {
     b.reserves += amount;
   }
   static withdraw(a: Customer, b: CommercialBank, amount: number) {
-    StaticMethods.debitAccount(a, b, amount, [
+    PaymentMethods.debitAccount(a, b, amount, [
       "customerDeposits",
       "customerOverdrafts",
     ]);
@@ -198,22 +168,22 @@ export class CustomerService {
     return customersBank;
   }
   static transfer(customerA: Customer, customerB: Customer, amount: number) {
-    const bankA = this.automateTransferFromAccount(customerA);
-    const bankB = this.automateTransferToAccount(customerB);
-    StaticMethods.debitAccount(customerA, bankA, amount, [
+    const bankA = CustomerService.automateTransferFromAccount(customerA);
+    const bankB = CustomerService.automateTransferToAccount(customerB);
+    PaymentMethods.debitAccount(customerA, bankA, amount, [
       "customerDeposits",
       "customerOverdrafts",
     ]);
-    StaticMethods.creditAccount(customerB, bankB, amount, [
+    PaymentMethods.creditAccount(customerB, bankB, amount, [
       "customerDeposits",
       "customerOverdrafts",
     ]);
-    StaticMethods.handleSystem(bankA, bankB, amount);
+    SystemMethods.increaseDues(bankA, bankB, amount);
   }
-  static openAccount(c: Bank, b: Bank) {
-    StaticMethods.createSubordinateAccount(
-      c,
-      b,
+  static openAccount(bankA: Bank, bankB: Bank) {
+    AccountMethods.createSubordinateAccount(
+      bankA,
+      bankB,
       0,
       "customerDeposits",
       "customerOverdrafts"
@@ -259,30 +229,24 @@ export class CustomerService {
 }
 
 export class CommercialBankService {
-  static debitAccount(a: CommercialBank, b: CommercialBank, amount: number) {
-    StaticMethods.debitAccount(a, b, amount, [
-      "bankDeposits",
-      "bankOverdrafts",
-    ]);
-  }
-  static creditAccount(a: CommercialBank, b: CommercialBank, amount: number) {
-    StaticMethods.creditAccount(a, b, amount, [
-      "bankDeposits",
-      "bankOverdrafts",
-    ]);
-  }
   static deposit(a: CommercialBank, b: CommercialBank, amount: number) {
-    this.creditAccount(a, b, amount);
+    PaymentMethods.creditAccount(a, b, amount, [
+      "bankDeposits",
+      "bankOverdrafts",
+    ]);
     a.reserves -= amount;
     b.reserves += amount;
   }
   static withdraw(a: CommercialBank, b: CommercialBank, amount: number) {
-    this.debitAccount(a, b, amount);
+    PaymentMethods.debitAccount(a, b, amount, [
+      "bankDeposits",
+      "bankOverdrafts",
+    ]);
     a.reserves += amount;
     b.reserves -= amount;
   }
   static openAccount(c: Bank, b: Bank) {
-    StaticMethods.createSubordinateAccount(
+    AccountMethods.createSubordinateAccount(
       c,
       b,
       0,
@@ -290,53 +254,36 @@ export class CommercialBankService {
       "bankOverdrafts"
     );
   }
+  static netDues(bank: Bank) {
+    SystemMethods.netDues(bank);
+  }
 }
 
 export class ClearingHouseService {
-  static netDues(bank: Bank) {
-    let bankDueFrom = bank.assets.dues.find(
-      (due) => due.id === bankLookup["clearinghouse"].id
-    );
-    let clearinghouseDueFrom = bankLookup[
-      "clearinghouse"
-    ].liabilities.dues.find((due) => due.id === bank.id);
-    if (clearinghouseDueFrom && bankDueFrom) {
-      clearinghouseDueFrom.amount = bankDueFrom.amount;
-    }
-    let bankDueTo = bank.liabilities.dues.find(
-      (due) => due.id === bankLookup["clearinghouse"].id
-    );
-    let clearinghouseDueTo = bankLookup["clearinghouse"].assets.dues.find(
-      (due) => due.id === bank.id
-    );
-    if (clearinghouseDueTo && bankDueTo) {
-      clearinghouseDueTo.amount = bankDueTo.amount;
-    }
-  }
   static settleDues() {
     for (const bank in bankLookup) {
       bankLookup[bank].liabilities.dues.forEach((due) => {
         if (due.amount > 0 && bankLookup[bank].id === "clearinghouse") {
-          StaticMethods.creditAccount(
+          PaymentMethods.creditAccount(
             bankLookup[due.id],
             bankLookup[bank],
             due.amount,
             ["chCertificates", "chOverdrafts"]
           );
         } else if (due.amount > 0 && bankLookup[bank].id !== "clearinghouse") {
-          StaticMethods.debitAccount(
+          PaymentMethods.debitAccount(
             bankLookup[bank],
             bankLookup[due.id],
             due.amount,
             ["chCertificates", "chOverdrafts"]
           );
         }
-        StaticMethods.clearDues(bankLookup[bank], bankLookup[due.id]);
+        PaymentMethods.clearDues(bankLookup[bank], bankLookup[due.id]);
       });
     }
   }
   static openAccount(c: Bank, b: Bank) {
-    StaticMethods.createSubordinateAccount(
+    AccountMethods.createSubordinateAccount(
       c,
       b,
       0,

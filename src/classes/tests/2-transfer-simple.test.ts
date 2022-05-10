@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom";
 
-import { Customer, CommercialBank } from "../classes2";
+import { Customer, CommercialBank } from "../instances";
 import { commercialAssets, commercialLiabilities, balances } from "../fixtures";
 function createBanksAndCustomers() {
   const bank1 = new CommercialBank(

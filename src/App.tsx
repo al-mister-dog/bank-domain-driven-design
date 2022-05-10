@@ -7,7 +7,7 @@ import {
   CommercialBank,
   Bank,
   ClearingHouse,
-} from "./classes/classes2";
+} from "./classes/instances";
 import {
   commercialAssets,
   commercialLiabilities,

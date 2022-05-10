@@ -1,59 +1,26 @@
-//TODOS
-/**
- * if clearinghouse system, set banks and clearinghouse to have x reserves and chCertificates
- */
 import "@testing-library/jest-dom";
+import { Customer, CommercialBank, ClearingHouse } from "../instances";
+import {
+  CustomerService,
+  CommercialBankService,
+  PaymentMethods,
+} from "../static-methods";
+import { System, systemCheck } from "../banking-system-methods";
 
-import { Customer, CommercialBank, Bank, ClearingHouse,  } from "../classes2";
-import { commercialAssets, commercialLiabilities, balances } from "../fixtures";
-import { StaticMethods, CustomerService, CommercialBankService } from "../staticMethods";
 function createBanksAndCustomers() {
-  StaticMethods.setBankingSystem("clearinghouse");
-  const clearinghouse = new ClearingHouse(
-    "clearinghouse",
-    { ...commercialAssets },
-    { ...commercialLiabilities },
-    { ...balances },
-    [],
-    0
-  );
-  const bank1 = new CommercialBank(
-    "Bank1",
-    { ...commercialAssets },
-    { ...commercialLiabilities },
-    { ...balances },
-    [],
-    0
-  );
-  const bank2 = new CommercialBank(
-    "Bank2",
-    { ...commercialAssets },
-    { ...commercialLiabilities },
-    { ...balances },
-    [],
-    0
-  );
-  const customer1 = new Customer(
-    "CUSTOMER1",
-    { customerDeposits: [] },
-    { customerOverdrafts: [], customerLoans: [] },
-    { ...balances },
-    []
-  );
-  const customer2 = new Customer(
-    "CUSTOMER2",
-    { customerDeposits: [] },
-    { customerOverdrafts: [], customerLoans: [] },
-    { ...balances },
-    []
-  );
+  System.setSystem("clearinghouse");
+  const clearinghouse = new ClearingHouse("clearinghouse");
+  const bank1 = new CommercialBank("Bank1");
+  const bank2 = new CommercialBank("Bank2");
+  const customer1 = new Customer("CUSTOMER1");
+  const customer2 = new Customer("CUSTOMER2");
   return { clearinghouse, bank1, bank2, customer1, customer2 };
 }
-describe("set up correspondent system", () => {
-  it("sets system to correspondent banking", () => {
+
+describe("set up clearing house system", () => {
+  it("sets system to clearing house banking", () => {
     createBanksAndCustomers();
-    const system = StaticMethods.getBankingSystem();
-    expect(system.clearinghouse).toBe(true);
+    expect(systemCheck).toBe("clearinghouse");
   });
 });
 describe("balance sheet accounting", () => {
@@ -76,7 +43,7 @@ describe("balance sheet accounting", () => {
         `${bank2.id}-${bank1.id}`,
       ]);
     });
-    it("increase bank1 liabilities dues to customer1 on transfer", () => {
+    it("increases bank1 liabilities dues to customer1 on transfer", () => {
       const { clearinghouse, bank1, bank2, customer1, customer2 } =
         createBanksAndCustomers();
       CustomerService.openAccount(customer1, bank1);
@@ -135,8 +102,8 @@ describe("balance sheet accounting", () => {
       CustomerService.transfer(customer1, customer2, 20);
       CustomerService.transfer(customer2, customer1, 30);
       CustomerService.transfer(customer2, customer1, 40);
-      bank1.netDues();
-      bank2.netDues();
+      CommercialBankService.netDues(bank1);
+      CommercialBankService.netDues(bank2);
       expect(bank1.liabilities.dues[0].amount).toBe(0);
       expect(bank1.assets.dues[0].amount).toBe(40);
       expect(bank2.liabilities.dues[0].amount).toBe(40);
@@ -155,8 +122,8 @@ describe("balance sheet accounting", () => {
       CustomerService.transfer(customer1, customer2, 20);
       CustomerService.transfer(customer2, customer1, 30);
       CustomerService.transfer(customer2, customer1, 40);
-      bank1.netDues();
-      bank2.netDues();
+      CommercialBankService.netDues(bank1);
+      CommercialBankService.netDues(bank2);
       expect(clearinghouse.liabilities.dues[0]).toEqual({
         id: bank2.id,
         type: "dues",
@@ -182,17 +149,15 @@ describe("balance sheet accounting", () => {
       const { bank1, bank2, customer1, customer2 } = createBanksAndCustomers();
       CustomerService.openAccount(customer1, bank1);
       CustomerService.openAccount(customer2, bank2);
-      // CommercialBankService.openAccount(bank1, bank2);
-      // CommercialBankService.openAccount(bank2, bank1);
       CustomerService.deposit(customer1, bank1, 100);
       CustomerService.deposit(customer2, bank2, 100);
       CustomerService.transfer(customer1, customer2, 10);
       CustomerService.transfer(customer1, customer2, 20);
       CustomerService.transfer(customer2, customer1, 30);
       CustomerService.transfer(customer2, customer1, 40);
-      bank1.netDues();
-      bank2.netDues();
-      StaticMethods.newSettleDues();
+      CommercialBankService.netDues(bank1);
+      CommercialBankService.netDues(bank2);
+      PaymentMethods.settleDues();
       expect(bank1.assets.chCertificates[0].amount).toBe(40);
       expect(bank1.accounts[0].balance).toBe(40);
     });
@@ -208,9 +173,9 @@ describe("balance sheet accounting", () => {
       CustomerService.transfer(customer1, customer2, 20);
       CustomerService.transfer(customer2, customer1, 30);
       CustomerService.transfer(customer2, customer1, 40);
-      bank1.netDues();
-      bank2.netDues();
-      StaticMethods.newSettleDues();
+      CommercialBankService.netDues(bank1);
+      CommercialBankService.netDues(bank2);
+      PaymentMethods.settleDues();
       expect(bank2.liabilities.chOverdrafts[0].amount).toBe(40);
       expect(bank2.accounts[0].balance).toBe(-40);
     });
@@ -225,9 +190,9 @@ describe("balance sheet accounting", () => {
       CustomerService.transfer(customer1, customer2, 20);
       CustomerService.transfer(customer2, customer1, 30);
       CustomerService.transfer(customer2, customer1, 40);
-      bank1.netDues();
-      bank2.netDues();
-      StaticMethods.newSettleDues();
+      CommercialBankService.netDues(bank1);
+      CommercialBankService.netDues(bank2);
+      PaymentMethods.settleDues();
       expect(clearinghouse.liabilities.chCertificates[0].amount).toBe(40);
       expect(clearinghouse.accounts[0].balance).toBe(40);
     });
@@ -244,9 +209,9 @@ describe("balance sheet accounting", () => {
       CustomerService.transfer(customer1, customer2, 20);
       CustomerService.transfer(customer2, customer1, 30);
       CustomerService.transfer(customer2, customer1, 40);
-      bank1.netDues();
-      bank2.netDues();
-      StaticMethods.newSettleDues();
+      CommercialBankService.netDues(bank1);
+      CommercialBankService.netDues(bank2);
+      PaymentMethods.settleDues();
       expect(clearinghouse.assets.chOverdrafts[1].amount).toBe(40);
       expect(clearinghouse.accounts[1].balance).toBe(-40);
     });
@@ -263,18 +228,18 @@ describe("balance sheet accounting", () => {
       CustomerService.transfer(customer1, customer2, 20);
       CustomerService.transfer(customer2, customer1, 30);
       CustomerService.transfer(customer2, customer1, 40);
-      bank1.netDues();
-      bank2.netDues();
-      StaticMethods.newSettleDues();
+      CommercialBankService.netDues(bank1);
+      CommercialBankService.netDues(bank2);
+      PaymentMethods.settleDues();
       expect(clearinghouse.assets.chOverdrafts[1].amount).toBe(40);
       expect(clearinghouse.accounts[1].balance).toBe(-40);
       CustomerService.transfer(customer1, customer2, 10);
       CustomerService.transfer(customer1, customer2, 20);
       CustomerService.transfer(customer2, customer1, 30);
       CustomerService.transfer(customer2, customer1, 40);
-      bank1.netDues();
-      bank2.netDues();
-      StaticMethods.newSettleDues();
+      CommercialBankService.netDues(bank1);
+      CommercialBankService.netDues(bank2);
+      PaymentMethods.settleDues();
       expect(clearinghouse.assets.chOverdrafts[1].amount).toBe(80);
       expect(clearinghouse.accounts[1].balance).toBe(-80);
     });
@@ -289,9 +254,9 @@ describe("balance sheet accounting", () => {
       CustomerService.transfer(customer1, customer2, 20);
       CustomerService.transfer(customer2, customer1, 30);
       CustomerService.transfer(customer2, customer1, 40);
-      bank1.netDues();
-      bank2.netDues();
-      StaticMethods.newSettleDues();
+      CommercialBankService.netDues(bank1);
+      CommercialBankService.netDues(bank2);
+      PaymentMethods.settleDues();
     });
   });
 });

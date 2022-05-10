@@ -1,5 +1,3 @@
-const account = { id: "id", amount: 0 };
-
 export const commercialAssets = {
   bankDeposits: [],
   bankOverdrafts: [],
@@ -10,6 +8,7 @@ export const commercialAssets = {
   customerLoans: [],
   dues: [],
 };
+
 export const commercialLiabilities = {
   bankDeposits: [],
   bankOverdrafts: [],
@@ -20,9 +19,13 @@ export const commercialLiabilities = {
   customerLoans: [],
   dues: [],
 };
-export const balances = {
-  bankDeposits: [],
-  bankLoans: [],
-  customerDeposits: [],
+
+export const clearinghouseAssets = {
+  chOverdrafts: [],
+  dues: [],
+}
+
+export const clearinghouseLiabilities = {
   chCertificates: [],
+  dues: [],
 }

@@ -1,13 +1,12 @@
 import "@testing-library/jest-dom";
 
-import { CommercialBank } from "../classes2";
-import { commercialAssets, commercialLiabilities, balances } from "../fixtures";
+import { CommercialBank } from "../instances";
+import { commercialAssets, commercialLiabilities } from "../fixtures";
 function createBankAndCustomer() {
   const bank1 = new CommercialBank(
     "Bank1",
     { ...commercialAssets },
     { ...commercialLiabilities },
-    { ...balances },
     [],
     0
   );
@@ -15,7 +14,6 @@ function createBankAndCustomer() {
     "Bank2",
     { ...commercialAssets },
     { ...commercialLiabilities },
-    { ...balances },
     [],
     0
   );
