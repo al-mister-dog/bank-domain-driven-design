@@ -3,7 +3,6 @@ import "@testing-library/jest-dom";
 import { Customer, CommercialBank } from "../instances";
 import { System, systemCheck } from "../systems";
 import { CustomerService, BankService } from "../services";
-import { PaymentMethods } from "../methods";
 
 function createBanksAndCustomers() {
   System.setSystem("correspondent");
@@ -84,8 +83,8 @@ describe("balance sheet accounting", () => {
       CustomerService.transfer(customer1, customer2, 20);
       CustomerService.transfer(customer2, customer1, 30);
       CustomerService.transfer(customer2, customer1, 40);
-      bank1.netDues();
-      bank2.netDues();
+      BankService.netDues(bank1);
+      BankService.netDues(bank2);
       expect(bank1.liabilities.dues[0].amount).toBe(0);
       expect(bank1.assets.dues[0].amount).toBe(40);
       expect(bank2.liabilities.dues[0].amount).toBe(40);
@@ -103,10 +102,9 @@ describe("balance sheet accounting", () => {
       CustomerService.transfer(customer1, customer2, 20);
       CustomerService.transfer(customer2, customer1, 30);
       CustomerService.transfer(customer2, customer1, 40);
-      bank1.netDues();
-      bank2.netDues();
-      // Bank.settleDues(bank1, bank2)
-      PaymentMethods.settleDues();
+      BankService.netDues(bank1);
+      BankService.netDues(bank2);
+      BankService.settleDues();
       expect(bank1.assets.dues[0].amount).toBe(0);
       expect(bank1.liabilities.dues[0].amount).toBe(0);
       expect(bank2.assets.dues[0].amount).toBe(0);
@@ -124,10 +122,9 @@ describe("balance sheet accounting", () => {
       CustomerService.transfer(customer1, customer2, 20);
       CustomerService.transfer(customer2, customer1, 30);
       CustomerService.transfer(customer2, customer1, 40);
-      bank1.netDues();
-      bank2.netDues();
-      // Bank.settleDues(bank1, bank2)
-      PaymentMethods.settleDues();
+      BankService.netDues(bank1);
+      BankService.netDues(bank2);
+      BankService.settleDues();
       expect(bank1.assets.bankDeposits[0].amount).toBe(40);
       expect(bank1.accounts[1].balance).toBe(40);
     });
@@ -143,10 +140,9 @@ describe("balance sheet accounting", () => {
       CustomerService.transfer(customer1, customer2, 20);
       CustomerService.transfer(customer2, customer1, 30);
       CustomerService.transfer(customer2, customer1, 40);
-      bank1.netDues();
-      bank2.netDues();
-      // Bank.settleDues(bank1, bank2)
-      PaymentMethods.settleDues();
+      BankService.netDues(bank1);
+      BankService.netDues(bank2);
+      BankService.settleDues();
       expect(bank2.liabilities.bankDeposits[0].amount).toBe(40);
       expect(bank2.accounts[1].balance).toBe(40);
     });

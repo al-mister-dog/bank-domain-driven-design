@@ -20,12 +20,19 @@ export const commercialLiabilities = {
   dues: [],
 };
 
+export const customerAssets = { customerDeposits: [] };
+
+export const customerLiabilities = {
+  customerOverdrafts: [],
+  customerLoans: [],
+};
+
 export const clearinghouseAssets = {
   chOverdrafts: [],
   dues: [],
-}
+};
 
 export const clearinghouseLiabilities = {
   chCertificates: [],
   dues: [],
-}
+};

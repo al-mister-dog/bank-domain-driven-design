@@ -3,6 +3,8 @@ import {
   commercialLiabilities,
   clearinghouseAssets,
   clearinghouseLiabilities,
+  customerLiabilities,
+  customerAssets,
 } from "./fixtures";
 import { SystemMethods, systemCheck } from "./systems";
 import {
@@ -114,9 +116,9 @@ export class Bank implements IBank {
     this.reserves -= amount
   }
 
-  netDues() {
-    SystemMethods.netDues(this);
-  }
+  // netDues() {
+  //   SystemMethods.netDues(this);
+  // }
 }
 
 export class CommercialBank extends Bank {
@@ -135,10 +137,9 @@ export class CommercialBank extends Bank {
 export class Customer extends Bank {
   constructor(
     public id: string,
-    public assets: Category = { customerDeposits: [] },
+    public assets: Category = { ...customerAssets },
     public liabilities: Category = {
-      customerOverdrafts: [],
-      customerLoans: [],
+      ...customerLiabilities
     },
     public accounts: any[] = [],
     public reserves: number = 100
