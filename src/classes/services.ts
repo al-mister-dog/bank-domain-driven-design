@@ -105,6 +105,7 @@ export class CustomerService {
   static transfer(customerA: Customer, customerB: Customer, amount: number) {
     const bankA = CustomerService.automateTransferFromAccount(customerA);
     const bankB = CustomerService.automateTransferToAccount(customerB);
+    
     PaymentMethods.debitAccount(customerA, bankA, amount, [
       "customerDeposits",
       "customerOverdrafts",
@@ -193,11 +194,11 @@ export class ClearingHouseService {
       });
     }
   }
-  static openAccount(bankA: Bank, bankB: Bank) {
+  static openAccount(bankA: Bank, bankB: Bank, amount: number = 0) {
     AccountMethods.createSubordinateAccount(
       bankA,
       bankB,
-      0,
+      amount,
       "chCertificates",
       "chOverdrafts"
     );
