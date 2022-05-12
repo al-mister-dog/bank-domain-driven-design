@@ -11,9 +11,11 @@ export class PaymentMethods {
   ) {
     const id = `${a.id}-${b.id}`;
     const aAccount = a.accounts.find((account: any) => account.id === id);
-    const bAccount = b.accounts.find((account: any) => account.id === id);
-    aAccount.balance += amount;
-    bAccount.balance += amount;
+    // const bAccount = b.accounts.find((account: any) => account.id === id);
+    a.increaseBalance(id, amount)
+    b.increaseBalance(id, amount)
+    // aAccount.balance += amount;
+    // bAccount.balance += amount;
     const [creditInstrument, debtInstrument] = instruments;
     PaymentMethods.mapBalance(
       a,
@@ -34,9 +36,10 @@ export class PaymentMethods {
 
     const aAccount = a.accounts.find((account: any) => account.id === id);
     const bAccount = b.accounts.find((account: any) => account.id === id);
-
-    aAccount.balance -= amount;
-    bAccount.balance -= amount;
+    a.decreaseBalance(id, amount)
+    b.decreaseBalance(id, amount)
+    // aAccount.balance -= amount;
+    // bAccount.balance -= amount;
 
     const [creditInstrument, debtInstrument] = instruments;
     PaymentMethods.mapBalance(
@@ -84,10 +87,10 @@ export class PaymentMethods {
 }
 
 export class AccountMethods {
-  static createAccount(a: Bank, b: Bank, creditInstrument: InstrumentKey) {
+  static createAccount(a: Bank, b: Bank, amount: number = 0, creditInstrument: InstrumentKey) {
     const id = `${a.id}-${b.id}`;
-    a.accounts = [...a.accounts, { id, type: creditInstrument, balance: 0 }];
-    b.accounts = [...b.accounts, { id, type: creditInstrument, balance: 0 }];
+    a.accounts = [...a.accounts, { id, type: creditInstrument, balance: amount }];
+    b.accounts = [...b.accounts, { id, type: creditInstrument, balance: amount }];
   }
 
   static createSubordinateAccount(
@@ -97,10 +100,10 @@ export class AccountMethods {
     creditInstrument: InstrumentKey,
     debtInstrument: InstrumentKey
   ) {
-    a.createInstrumentAccount(b.id, "assets", creditInstrument, amount);
-    a.createInstrumentAccount(b.id, "liabilities", debtInstrument, 0);
-    b.createInstrumentAccount(a.id, "assets", debtInstrument, 0);
-    b.createInstrumentAccount(a.id, "liabilities", creditInstrument, amount);
-    AccountMethods.createAccount(a, b, creditInstrument);
+    a.createInstrument(b.id, "assets", creditInstrument, amount);
+    a.createInstrument(b.id, "liabilities", debtInstrument, 0);
+    b.createInstrument(a.id, "assets", debtInstrument, 0);
+    b.createInstrument(a.id, "liabilities", creditInstrument, amount);
+    AccountMethods.createAccount(a, b, amount, creditInstrument);
   }
 }

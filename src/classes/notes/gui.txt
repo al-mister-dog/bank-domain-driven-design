@@ -1,0 +1,17 @@
+single bank
+click on a bank
+shows balance sheet
+shows accounts with other banks and customers
+shows a list of options for functions
+
+create a bank -- 
+  bank name
+  type of bank
+  add customers
+  join a clearinghouse
+  create a correspondent account
+
+create a customer --
+
+
+npx create-react-app banking-1 --template redux-typescript

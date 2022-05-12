@@ -1,58 +1,37 @@
-//TODOS
-//LOOK OUT FOR NET DUES
 import { SetStateAction, useState } from "react";
-import "./App.css";
-import BankComponent from "./components/ui/BankComponent";
+import "../App.css";
+import BankComponent from "../components/ui/BankComponent";
 import {
   Customer,
   CommercialBank,
   Bank,
-} from "./classes/instances";
+} from "../classes/instances";
 
 import {
   CustomerService,
   BankService,
   ClearingHouseService,
-} from "./classes/services";
+} from "../classes/services";
 
-import CustomerComponent from "./components/ui/CustomerComponent";
-import ClearingHouseComponent from "./components/ui/ClearingHouseComponent";
+import CustomerComponent from "../components/ui/CustomerComponent";
+import ClearingHouseComponent from "../components/ui/ClearingHouseComponent";
 
-import {clearinghouse, bank1, bank2, customer1, customer2} from "./fixtures/clearinghouse"
+import {clearinghouseSystem} from "./state"
+const {clearinghouse, bank1, bank2, customer1, customer2} = clearinghouseSystem()
 
 function App() {
-  const [num, setNum] = useState<number>(0);
-
-  function transfer(customer1: Customer, customer2: Customer) {
-    CustomerService.transfer(customer1, customer2, 50);
-    setNum(num + 1);
-    console.log(bank2)
-  }
-  function deposit(customer1: Customer, bank1: Customer) {
-    CustomerService.deposit(customer1, bank1, 50);
-    setNum(num + 1);
-  }
-  function netDues() {
-    BankService.netDues(bank1);
-    BankService.netDues(bank2);
-    setNum(num + 1);
-  }
-  function settleDues() {
-    ClearingHouseService.settleDues();
-    console.log(bank2)
-    setNum(num + 1);
-  }
-
+  const state = {clearinghouse, bank1, bank2, customer1, customer2}
+  const [stateTracker, setStateTracker] = useState(state)
   const [banks, setBanks] = useState<Bank[]>([bank1, bank2]);
   const [customers, setCustomers] = useState<Customer[]>([
     customer1,
     customer2,
   ]);
 
+  //components
   const BankComponents = banks.map((bank) => (
     <BankComponent bank={bank} netDues={netDues} />
   ));
-
   const CustomerComponents = customers.map((customer) => {
     const otherCustomers = customers.filter((c) => c.id !== customer.id);
     const customersBankId = customer.accounts[0].id.split("-")[1];
@@ -68,22 +47,22 @@ function App() {
     );
   });
 
+  //form functions
   const [newCustomerId, setNewCustomerId] = useState("");
-
+  const [newBankId, setNewBankId] = useState("");
   const handleChangeCustomerId = (event: {
     target: { value: SetStateAction<string> };
   }) => {
     setNewCustomerId(event.target.value);
   };
-
-  const [newBankId, setNewBankId] = useState("");
-
   const handleChangeBankId = (event: {
     target: { value: SetStateAction<string> };
   }) => {
     setNewBankId(event.target.value);
   };
 
+
+  //create functions
   function createCustomer() {
     const newCustomer = new Customer(newCustomerId);
     CustomerService.openAccount(newCustomer, bank1);
@@ -99,6 +78,25 @@ function App() {
     setBanks([...banks, newBank]);
   }
 
+  //component functions
+  function transfer(customer1: Customer, customer2: Customer) {
+    CustomerService.transfer(customer1, customer2, 50);
+    // setBanks([...banks])
+    setStateTracker({...state})
+  }
+  function deposit(customer1: Customer, bank1: Customer) {
+    CustomerService.deposit(customer1, bank1, 50);
+    setBanks([...banks])
+  }
+  function netDues() {
+    BankService.netDues(bank1);
+    BankService.netDues(bank2);
+    setBanks([...banks])
+  }
+  function settleDues() {
+    ClearingHouseService.settleDues();
+    setBanks([...banks])
+  }
   return (
     <div style={{ display: "flex" }}>
       <div
@@ -119,7 +117,7 @@ function App() {
           return customer;
         })}
       </div>
-      <div>
+      <div style={{width: "30vw"}}>
         <div>
           <input
             type="text"
@@ -142,6 +140,7 @@ function App() {
           />
           <button onClick={createBank}>Create Bank</button>
         </div>
+        {JSON.stringify(bank1)}
       </div>
     </div>
   );

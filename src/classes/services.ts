@@ -1,6 +1,7 @@
-import { Bank, bankLookup, CommercialBank, Customer } from "./instances";
+import { Bank, CommercialBank, Customer } from "./instances";
 import { SystemMethods } from "./systems";
 import { PaymentMethods, AccountMethods } from "./methods";
+import { bankLookup } from "./lookupTables";
 
 interface SystemLookup {
   [key: string]: boolean;
@@ -135,13 +136,13 @@ export class CustomerService {
   ) {
     const interest = (amount * rate) / 100;
     const amountPlusInterest = amount + interest;
-    a.createInstrumentAccount(
+    a.createInstrument(
       b.id,
       "liabilities",
       "customerLoans",
       amountPlusInterest
     );
-    b.createInstrumentAccount(
+    b.createInstrument(
       a.id,
       "assets",
       "customerLoans",
@@ -174,15 +175,19 @@ export class CustomerService {
 export class ClearingHouseService {
   static settleDues() {
     for (const bank in bankLookup) {
+      
       bankLookup[bank].liabilities.dues.forEach((due) => {
-        if (due.amount > 0 && bankLookup[bank].id === "clearinghouse") {
+        const clearinghouseOwesBank = due.amount > 0 && bankLookup[bank].id === "clearinghouse" && due.id !== "clearinghouse"
+        const bankOwesClearinghouse = due.amount > 0 && bankLookup[bank].id !== "clearinghouse" && due.id === "clearinghouse"
+        if (clearinghouseOwesBank) {
           PaymentMethods.creditAccount(
             bankLookup[due.id],
             bankLookup[bank],
             due.amount,
             ["chCertificates", "chOverdrafts"]
           );
-        } else if (due.amount > 0 && bankLookup[bank].id !== "clearinghouse") {
+        } 
+        else if (bankOwesClearinghouse) {
           PaymentMethods.debitAccount(
             bankLookup[bank],
             bankLookup[due.id],
@@ -202,5 +207,6 @@ export class ClearingHouseService {
       "chCertificates",
       "chOverdrafts"
     );
+    bankB.increaseReserves(amount)
   }
 }

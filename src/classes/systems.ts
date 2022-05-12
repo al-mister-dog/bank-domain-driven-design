@@ -1,4 +1,5 @@
-import { Bank, bankLookup } from "./instances";
+import { Bank } from "./instances";
+import { bankLookup } from "./lookupTables";
 import { PaymentMethods } from "./methods";
 
 type SystemType = {

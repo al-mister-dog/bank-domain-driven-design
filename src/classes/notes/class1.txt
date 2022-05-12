@@ -1,5 +1,5 @@
 //ACCOUNT FUNCTIONS
-createInstrumentAccount()
+createInstrument()
   creates an account record for a given financial instrument e.g bankDeposits
   "change to record"?
 

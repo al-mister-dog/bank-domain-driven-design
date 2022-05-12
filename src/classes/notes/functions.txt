@@ -50,8 +50,8 @@ loan(A)-     deposits(A)-     deposits(B)-  loan(B)-
 
 functions 
 Customer.takeOutLoan() {
-  bank.createInstrumentAccount(loan)
-  customer.createInstrumentAccount(loan)
+  bank.createInstrument(loan)
+  customer.createInstrument(loan)
   bank.increaseLiabilities(deposits)
   customer.increaseAssets(deposits)
 }

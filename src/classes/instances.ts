@@ -6,6 +6,7 @@ import {
   customerLiabilities,
   customerAssets,
 } from "./fixtures";
+import { bankLookup, customerLookup } from "./lookupTables";
 
 import {
   IBank,
@@ -13,12 +14,7 @@ import {
   CategoryKey,
   InstrumentKey,
   Account,
-  IBankLookup,
-  ICustomerLookup,
 } from "./types";
-
-export const bankLookup: IBankLookup = {};
-export const customerLookup: ICustomerLookup = {};
 
 export class Bank implements IBank {
   constructor(
@@ -36,7 +32,9 @@ export class Bank implements IBank {
     amount: number
   ) {
     const index = this.findAccountIndex(id, category, instrument);
-    this[category][instrument][index].amount = amount;
+    if (index !== -1) {
+      this[category][instrument][index].amount = amount;
+    }
   }
 
   isAccount(
@@ -50,7 +48,7 @@ export class Bank implements IBank {
     return account ? true : false;
   }
 
-  createInstrumentAccount(
+  createInstrument(
     id: string,
     category: CategoryKey,
     instrument: InstrumentKey,
@@ -80,10 +78,10 @@ export class Bank implements IBank {
     amount: number
   ) {
     if (!this.isAccount(id, category, instrument)) {
-      this.createInstrumentAccount(id, category, instrument, amount);
+      this.createInstrument(id, category, instrument, amount);
     } else {
       const index = this.findAccountIndex(id, category, instrument);
-    this[category][instrument][index].amount += amount;
+      this[category][instrument][index].amount += amount;
     }
   }
 
@@ -93,18 +91,35 @@ export class Bank implements IBank {
     instrument: InstrumentKey,
     amount: number
   ) {
-    const index = this.findAccountIndex(id, category, instrument);
-    this[category][instrument][index].amount -= amount;
+    if (!this.isAccount(id, category, instrument)) {
+      this.createInstrument(id, category, instrument, amount);
+    } else {
+      const index = this.findAccountIndex(id, category, instrument);
+      this[category][instrument][index].amount -= amount;
+    }
   }
 
   increaseReserves(amount: number) {
-    this.reserves += amount
+    this.reserves += amount;
   }
 
   decreaseReserves(amount: number) {
-    this.reserves -= amount
+    this.reserves -= amount;
   }
 
+  increaseBalance(id: string, amount: number) {
+    const index = this.accounts.findIndex((acc: Account) => {
+      return acc.id === id;
+    });
+    this.accounts[index].balance += amount;
+  }
+
+  decreaseBalance(id: string, amount: number) {
+    const index = this.accounts.findIndex((acc: Account) => {
+      return acc.id === id;
+    });
+    this.accounts[index].balance -= amount;
+  }
 }
 
 export class CommercialBank extends Bank {
@@ -125,7 +140,7 @@ export class Customer extends Bank {
     public id: string,
     public assets: Category = { ...customerAssets },
     public liabilities: Category = {
-      ...customerLiabilities
+      ...customerLiabilities,
     },
     public accounts: any[] = [],
     public reserves: number = 100

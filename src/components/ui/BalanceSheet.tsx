@@ -4,16 +4,29 @@ const BalanceSheet = ({ bank }: { bank: IBank }) => {
     <div>
       <h3>{bank.id}</h3>
       <div style={{ display: "flex", flexDirection: "row" }}>
-        <div style={{ display: "flex", flexDirection: "column", marginRight: "10px", padding: "0px"}}>
-          <h4 style={{margin: "0px", padding: "0px"}}>Assets</h4>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            marginRight: "10px",
+            padding: "0px",
+          }}
+        >
+          <h4 style={{ margin: "0px", padding: "0px" }}>Assets</h4>
+          <h6 style={{ margin: "0px", padding: "0px" }}>
+            Reserves: {bank.reserves}
+          </h6>
           {Object.entries(bank.assets)
             .filter(([assetType, assets], i) => assets.length > 0)
             .map(([assetType, assets], i) => {
               return (
-                <div key={i} style={{margin: "0px", padding: "0px"}}>
-                  <h5 style={{margin: "0px", padding: "0px"}}>{assetType}</h5>
+                <div key={i} style={{ margin: "0px", padding: "0px" }}>
+                  <h5 style={{ margin: "0px", padding: "0px" }}>{assetType}</h5>
                   {assets.map((account) => (
-                    <h6 key={account.id} style={{margin: "0px", padding: "0px"}}>
+                    <h6
+                      key={account.id}
+                      style={{ margin: "0px", padding: "0px" }}
+                    >
                       <span>{account.id}: </span>
                       <span>{account.amount}</span>
                     </h6>
@@ -22,16 +35,27 @@ const BalanceSheet = ({ bank }: { bank: IBank }) => {
               );
             })}
         </div>
-        <div style={{ display: "flex", flexDirection: "column", marginRight: "10px", padding: "0px"}}>
-          <h4 style={{margin: "0px", padding: "0px"}}>Liabilities</h4>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            marginRight: "10px",
+            padding: "0px",
+          }}
+        >
+          <h4 style={{ margin: "0px", padding: "0px" }}>Liabilities</h4>
+          <h6 style={{ margin: "0px", padding: "0px" }}>_</h6>
           {Object.entries(bank.liabilities)
             .filter(([assetType, liabilities], i) => liabilities.length > 0)
             .map(([assetType, liabilities], i) => {
               return (
-                <div key={i} style={{margin: "0px", padding: "0px"}}>
-                  <h5 style={{margin: "0px", padding: "0px"}}>{assetType}</h5>
+                <div key={i} style={{ margin: "0px", padding: "0px" }}>
+                  <h5 style={{ margin: "0px", padding: "0px" }}>{assetType}</h5>
                   {liabilities.map((account) => (
-                    <h6 key={account.id} style={{margin: "0px", padding: "0px"}}>
+                    <h6
+                      key={account.id}
+                      style={{ margin: "0px", padding: "0px" }}
+                    >
                       <span>{account.id}: </span>
                       <span>{account.amount}</span>
                     </h6>
