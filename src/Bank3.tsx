@@ -1,13 +1,8 @@
-//TODOS
-//LOOK OUT FOR NET DUES
 import { SetStateAction, useState } from "react";
 import "./App.css";
 import BankComponent from "./components/ui/BankComponent";
-import {
-  Customer,
-  CommercialBank,
-  Bank,
-} from "./classes/instances";
+import SelectedCustomer from "./components/ui/SelectedCustomer";
+import { Customer, CommercialBank, Bank } from "./classes/instances";
 
 import {
   CustomerService,
@@ -15,75 +10,51 @@ import {
   ClearingHouseService,
 } from "./classes/services";
 
-import CustomerComponent from "./components/ui/CustomerComponent";
 import ClearingHouseComponent from "./components/ui/ClearingHouseComponent";
 
-import {clearinghouse, bank1, bank2, customer1, customer2} from "./fixtures/clearinghouse"
+import { clearinghouseSystem } from "./Bank4/state";
+import CustomerSelect from "./components/ui/CustomerSelect";
+const { clearinghouse, bank1, bank2, customer1, customer2 } =
+  clearinghouseSystem();
 
 function App() {
-  const [num, setNum] = useState<number>(0);
-
-  function transfer(customer1: Customer, customer2: Customer) {
-    CustomerService.transfer(customer1, customer2, 50);
-    setNum(num + 1);
-    console.log(bank2)
-  }
-  function deposit(customer1: Customer, bank1: Customer) {
-    CustomerService.deposit(customer1, bank1, 50);
-    setNum(num + 1);
-  }
-  function netDues() {
-    BankService.netDues(bank1);
-    BankService.netDues(bank2);
-    setNum(num + 1);
-  }
-  function settleDues() {
-    ClearingHouseService.settleDues();
-    console.log(bank2)
-    setNum(num + 1);
-  }
-
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null
+  );
   const [banks, setBanks] = useState<Bank[]>([bank1, bank2]);
   const [customers, setCustomers] = useState<Customer[]>([
     customer1,
     customer2,
   ]);
+  function selectCustomer(customer: Customer) {
+    setSelectedCustomer(customer);
+  }
 
+  //components
   const BankComponents = banks.map((bank) => (
     <BankComponent bank={bank} netDues={netDues} />
   ));
-
   const CustomerComponents = customers.map((customer) => {
-    const otherCustomers = customers.filter((c) => c.id !== customer.id);
-    const customersBankId = customer.accounts[0].id.split("-")[1];
-    const bank = banks.filter((b) => b.id === customersBankId);
     return (
-      <CustomerComponent
-        customer1={customer}
-        customer2={otherCustomers[0]}
-        bank1={bank[0]}
-        transfer={transfer}
-        deposit={deposit}
-      />
+      <CustomerSelect customer={customer} selectCustomer={selectCustomer} />
     );
   });
 
+  //form functions
   const [newCustomerId, setNewCustomerId] = useState("");
-
+  const [newBankId, setNewBankId] = useState("");
   const handleChangeCustomerId = (event: {
     target: { value: SetStateAction<string> };
   }) => {
     setNewCustomerId(event.target.value);
   };
-
-  const [newBankId, setNewBankId] = useState("");
-
   const handleChangeBankId = (event: {
     target: { value: SetStateAction<string> };
   }) => {
     setNewBankId(event.target.value);
   };
 
+  //create functions
   function createCustomer() {
     const newCustomer = new Customer(newCustomerId);
     CustomerService.openAccount(newCustomer, bank1);
@@ -99,6 +70,24 @@ function App() {
     setBanks([...banks, newBank]);
   }
 
+  //component functions
+  function transfer(customer1: Customer, customer2: Customer) {
+    CustomerService.transfer(customer1, customer2, 50);
+    setBanks([...banks]);
+  }
+  function deposit(customer1: Customer, bank1: Customer) {
+    CustomerService.deposit(customer1, bank1, 50);
+    setBanks([...banks]);
+  }
+  function netDues() {
+    BankService.netDues(bank1);
+    BankService.netDues(bank2);
+    setBanks([...banks]);
+  }
+  function settleDues() {
+    ClearingHouseService.settleDues();
+    setBanks([...banks]);
+  }
   return (
     <div style={{ display: "flex" }}>
       <div
@@ -119,7 +108,7 @@ function App() {
           return customer;
         })}
       </div>
-      <div>
+      <div style={{ width: "30vw" }}>
         <div>
           <input
             type="text"
@@ -142,6 +131,15 @@ function App() {
           />
           <button onClick={createBank}>Create Bank</button>
         </div>
+        {selectedCustomer !== null && (
+          <SelectedCustomer
+            customer={selectedCustomer}
+            customers={customers}
+            banks={banks}
+            transfer={transfer}
+            deposit={deposit}
+          />
+        )}
       </div>
     </div>
   );

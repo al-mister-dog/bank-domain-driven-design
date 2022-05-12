@@ -9,21 +9,23 @@ export class PaymentMethods {
     amount: number,
     instruments: InstrumentKey[]
   ) {
-    const id = `${a.id}-${b.id}`;
-    const aAccount = a.accounts.find((account: any) => account.id === id);
-    // const bAccount = b.accounts.find((account: any) => account.id === id);
-    a.increaseBalance(id, amount)
-    b.increaseBalance(id, amount)
-    // aAccount.balance += amount;
-    // bAccount.balance += amount;
     const [creditInstrument, debtInstrument] = instruments;
-    PaymentMethods.mapBalance(
-      a,
-      b,
-      creditInstrument,
-      debtInstrument,
-      aAccount.balance
+    const id = `${a.id}-${b.id}`;
+    const account = a.balances[creditInstrument].find(
+      (account: any) => account.id === id
     );
+    if (account) {
+      a.increaseInstrument(id, "balances", creditInstrument, amount);
+      b.increaseInstrument(id, "balances", creditInstrument, amount);
+
+      PaymentMethods.mapBalance(
+        a,
+        b,
+        creditInstrument,
+        debtInstrument,
+        account.amount
+      );
+    }
   }
 
   static debitAccount(
@@ -32,23 +34,22 @@ export class PaymentMethods {
     amount: number,
     instruments: InstrumentKey[]
   ) {
-    const id = `${a.id}-${b.id}`;
-
-    const aAccount = a.accounts.find((account: any) => account.id === id);
-    const bAccount = b.accounts.find((account: any) => account.id === id);
-    a.decreaseBalance(id, amount)
-    b.decreaseBalance(id, amount)
-    // aAccount.balance -= amount;
-    // bAccount.balance -= amount;
-
     const [creditInstrument, debtInstrument] = instruments;
-    PaymentMethods.mapBalance(
-      a,
-      b,
-      creditInstrument,
-      debtInstrument,
-      aAccount.balance
+    const id = `${a.id}-${b.id}`;
+    const account = a.balances[creditInstrument].find(
+      (account: any) => account.id === id
     );
+    if (account) {
+      a.decreaseInstrument(id, "balances", creditInstrument, amount);
+      b.decreaseInstrument(id, "balances", creditInstrument, amount);
+      PaymentMethods.mapBalance(
+        a,
+        b,
+        creditInstrument,
+        debtInstrument,
+        account.amount
+      );
+    }
   }
 
   static mapBalance(
@@ -87,10 +88,15 @@ export class PaymentMethods {
 }
 
 export class AccountMethods {
-  static createAccount(a: Bank, b: Bank, amount: number = 0, creditInstrument: InstrumentKey) {
+  static createBalance(
+    a: Bank,
+    b: Bank,
+    amount: number = 0,
+    creditInstrument: InstrumentKey
+  ) {
     const id = `${a.id}-${b.id}`;
-    a.accounts = [...a.accounts, { id, type: creditInstrument, balance: amount }];
-    b.accounts = [...b.accounts, { id, type: creditInstrument, balance: amount }];
+    a.createInstrument(id, "balances", creditInstrument, amount);
+    b.createInstrument(id, "balances", creditInstrument, amount);
   }
 
   static createSubordinateAccount(
@@ -104,6 +110,6 @@ export class AccountMethods {
     a.createInstrument(b.id, "liabilities", debtInstrument, 0);
     b.createInstrument(a.id, "assets", debtInstrument, 0);
     b.createInstrument(a.id, "liabilities", creditInstrument, amount);
-    AccountMethods.createAccount(a, b, amount, creditInstrument);
+    AccountMethods.createBalance(a, b, amount, creditInstrument);
   }
 }

@@ -27,10 +27,12 @@ describe("balance sheet accounting", () => {
       CustomerService.openAccount(customer2, bank2);
       BankService.openAccount(bank1, bank2);
       BankService.openAccount(bank2, bank1);
-      expect(customer1.accounts.length).toBe(1);
-      expect(customer2.accounts.length).toBe(1);
-      expect(bank1.accounts.length).toBe(3);
-      expect(bank2.accounts.length).toBe(3);
+      expect(customer1.balances.customerDeposits.length).toBe(1);
+      expect(customer2.balances.customerDeposits.length).toBe(1);
+      expect(bank1.balances.customerDeposits.length).toBe(1);
+      expect(bank2.balances.customerDeposits.length).toBe(1);
+      expect(bank1.balances.bankDeposits.length).toBe(2);
+      expect(bank2.balances.bankDeposits.length).toBe(2);
     });
     it("increase bank1 liabilities dues to customer1 on transfer", () => {
       const { bank1, bank2, customer1, customer2 } = createBanksAndCustomers();
@@ -126,7 +128,7 @@ describe("balance sheet accounting", () => {
       BankService.netDues(bank2);
       BankService.settleDues();
       expect(bank1.assets.bankDeposits[0].amount).toBe(40);
-      expect(bank1.accounts[1].balance).toBe(40);
+      expect(bank1.balances.bankDeposits[0].amount).toBe(40);
     });
     it("increases bank2 assets and balance in account with bank1", () => {
       const { bank1, bank2, customer1, customer2 } = createBanksAndCustomers();
@@ -144,7 +146,7 @@ describe("balance sheet accounting", () => {
       BankService.netDues(bank2);
       BankService.settleDues();
       expect(bank2.liabilities.bankDeposits[0].amount).toBe(40);
-      expect(bank2.accounts[1].balance).toBe(40);
+      expect(bank2.balances.bankDeposits[0].amount).toBe(40);
     });
   });
 });

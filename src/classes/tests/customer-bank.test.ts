@@ -19,37 +19,37 @@ describe("balance sheet accounting", () => {
     it("creates an account accessible to both customer and bank on openAccount", () => {
       const { bank1, customer1 } = createBankAndCustomer();
       CustomerService.openAccount(customer1, bank1);
-      expect(customer1.accounts.length).toBe(1);
-      expect(bank1.accounts.length).toBe(1);
+      expect(customer1.balances.customerDeposits.length).toBe(1);
+      expect(bank1.balances.customerDeposits.length).toBe(1);
     });
     it("creates an account in customer with an ordered id on openAccount", () => {
       const { bank1, customer1 } = createBankAndCustomer();
       CustomerService.openAccount(customer1, bank1);
-      expect(customer1.accounts[0].id).toBe(`${customer1.id}-${bank1.id}`);
+      expect(customer1.balances.customerDeposits[0].id).toBe(`${customer1.id}-${bank1.id}`);
     });
     it("creates an account in bank with an ordered set id on openAccount", () => {
       const { bank1, customer1 } = createBankAndCustomer();
       CustomerService.openAccount(customer1, bank1);
-      expect(bank1.accounts[0].id).toBe(`${customer1.id}-${bank1.id}`);
+      expect(bank1.balances.customerDeposits[0].id).toBe(`${customer1.id}-${bank1.id}`);
     });
     it("adds to customer account balance on customerDeposit", () => {
       const { bank1, customer1 } = createBankAndCustomer();
       CustomerService.openAccount(customer1, bank1);
       CustomerService.deposit(customer1, bank1, 100);
-      expect(customer1.accounts[0]).toEqual({
+      expect(customer1.balances.customerDeposits[0]).toEqual({
         id: `${customer1.id}-${bank1.id}`,
         type: "customerDeposits",
-        balance: 100,
+        amount: 100,
       });
     });
     it("adds to bank account balance on customerDeposit", () => {
       const { bank1, customer1 } = createBankAndCustomer();
       CustomerService.openAccount(customer1, bank1);
       CustomerService.deposit(customer1, bank1, 100);
-      expect(bank1.accounts[0]).toEqual({
+      expect(bank1.balances.customerDeposits[0]).toEqual({
         id: `${customer1.id}-${bank1.id}`,
         type: "customerDeposits",
-        balance: 100,
+        amount: 100,
       });
     });
     it("accumulates a balance", () => {
@@ -60,35 +60,35 @@ describe("balance sheet accounting", () => {
       for (let i = 0; i < depositActions; i++) {
         CustomerService.deposit(customer1, bank1, depositAmount);
       }
-      expect(bank1.accounts[0]).toEqual({
+      expect(bank1.balances.customerDeposits[0]).toEqual({
         id: `${customer1.id}-${bank1.id}`,
         type: "customerDeposits",
-        balance: depositAmount * depositActions,
+        amount: depositAmount * depositActions,
       });
-      expect(customer1.accounts[0]).toEqual({
+      expect(customer1.balances.customerDeposits[0]).toEqual({
         id: `${customer1.id}-${bank1.id}`,
         type: "customerDeposits",
-        balance: depositAmount * depositActions,
+        amount: depositAmount * depositActions,
       });
     });
     it("subtracts from customer account on customerWithdraw", () => {
       const { bank1, customer1 } = createBankAndCustomer();
       CustomerService.openAccount(customer1, bank1);
       CustomerService.withdraw(customer1, bank1, 100);
-      expect(customer1.accounts[0]).toEqual({
+      expect(customer1.balances.customerDeposits[0]).toEqual({
         id: `${customer1.id}-${bank1.id}`,
         type: "customerDeposits",
-        balance: -100,
+        amount: -100,
       });
     });
     it("subtract from bank account on customerWithdraw", () => {
       const { bank1, customer1 } = createBankAndCustomer();
       CustomerService.openAccount(customer1, bank1);
       CustomerService.withdraw(customer1, bank1, 100);
-      expect(bank1.accounts[0]).toEqual({
+      expect(bank1.balances.customerDeposits[0]).toEqual({
         id: `${customer1.id}-${bank1.id}`,
         type: "customerDeposits",
-        balance: -100,
+        amount: -100,
       });
     });
     it("decreases a balance", () => {
@@ -99,15 +99,15 @@ describe("balance sheet accounting", () => {
       for (let i = 0; i < depositActions; i++) {
         CustomerService.withdraw(customer1, bank1, depositAmount);
       }
-      expect(bank1.accounts[0]).toEqual({
+      expect(bank1.balances.customerDeposits[0]).toEqual({
         id: `${customer1.id}-${bank1.id}`,
         type: "customerDeposits",
-        balance: -(depositAmount * depositActions),
+        amount: -(depositAmount * depositActions),
       });
-      expect(customer1.accounts[0]).toEqual({
+      expect(customer1.balances.customerDeposits[0]).toEqual({
         id: `${customer1.id}-${bank1.id}`,
         type: "customerDeposits",
-        balance: -(depositAmount * depositActions),
+        amount: -(depositAmount * depositActions),
       });
     });
   });
@@ -196,22 +196,22 @@ describe("balance sheet accounting", () => {
       const { bank1, customer1 } = createBankAndCustomer();
       CustomerService.openAccount(customer1, bank1);
       CustomerService.deposit(customer1, bank1, 100);
-      expect(customer1.accounts[0].balance).toBe(100);
-      expect(bank1.accounts[0].balance).toBe(100);
+      expect(customer1.balances.customerDeposits[0].amount).toBe(100);
+      expect(bank1.balances.customerDeposits[0].amount).toBe(100);
       expect(customer1.assets.customerDeposits[0].amount).toBe(100);
       expect(bank1.liabilities.customerDeposits[0].amount).toBe(100);
       expect(customer1.liabilities.customerOverdrafts[0].amount).toBe(0);
       expect(bank1.assets.customerOverdrafts[0].amount).toBe(0);
       CustomerService.withdraw(customer1, bank1, 200);
-      expect(customer1.accounts[0].balance).toBe(-100);
-      expect(bank1.accounts[0].balance).toBe(-100);
+      expect(customer1.balances.customerDeposits[0].amount).toBe(-100);
+      expect(bank1.balances.customerDeposits[0].amount).toBe(-100);
       expect(customer1.assets.customerDeposits[0].amount).toBe(0);
       expect(bank1.liabilities.customerDeposits[0].amount).toBe(0);
       expect(customer1.liabilities.customerOverdrafts[0].amount).toBe(100);
       expect(bank1.assets.customerOverdrafts[0].amount).toBe(100);
       CustomerService.deposit(customer1, bank1, 200);
-      expect(customer1.accounts[0].balance).toBe(100);
-      expect(bank1.accounts[0].balance).toBe(100);
+      expect(customer1.balances.customerDeposits[0].amount).toBe(100);
+      expect(bank1.balances.customerDeposits[0].amount).toBe(100);
       expect(customer1.assets.customerDeposits[0].amount).toBe(100);
       expect(bank1.liabilities.customerDeposits[0].amount).toBe(100);
       expect(customer1.liabilities.customerOverdrafts[0].amount).toBe(0);

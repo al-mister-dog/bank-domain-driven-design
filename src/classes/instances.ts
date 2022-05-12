@@ -1,27 +1,24 @@
 import {
   commercialAssets,
   commercialLiabilities,
+  commercialBalances,
   clearinghouseAssets,
   clearinghouseLiabilities,
+  clearinghouseBalances,
   customerLiabilities,
   customerAssets,
+  customerBalances,
 } from "./fixtures";
 import { bankLookup, customerLookup } from "./lookupTables";
 
-import {
-  IBank,
-  Category,
-  CategoryKey,
-  InstrumentKey,
-  Account,
-} from "./types";
+import { IBank, Category, CategoryKey, InstrumentKey, Account } from "./types";
 
 export class Bank implements IBank {
   constructor(
     public id: string,
     public assets: Category,
     public liabilities: Category,
-    public accounts: any,
+    public balances: Category,
     public reserves: number
   ) {}
 
@@ -107,19 +104,19 @@ export class Bank implements IBank {
     this.reserves -= amount;
   }
 
-  increaseBalance(id: string, amount: number) {
-    const index = this.accounts.findIndex((acc: Account) => {
-      return acc.id === id;
-    });
-    this.accounts[index].balance += amount;
-  }
+  // increaseBalance(id: string, amount: number) {
+  //   const index = this.balances.findIndex((acc: Account) => {
+  //     return acc.id === id;
+  //   });
+  //   this.balances[index].balance += amount;
+  // }
 
-  decreaseBalance(id: string, amount: number) {
-    const index = this.accounts.findIndex((acc: Account) => {
-      return acc.id === id;
-    });
-    this.accounts[index].balance -= amount;
-  }
+  // decreaseBalance(id: string, amount: number) {
+  //   const index = this.balances.findIndex((acc: Account) => {
+  //     return acc.id === id;
+  //   });
+  //   this.balances[index].balance -= amount;
+  // }
 }
 
 export class CommercialBank extends Bank {
@@ -127,10 +124,10 @@ export class CommercialBank extends Bank {
     public id: string,
     public assets: Category = { ...commercialAssets },
     public liabilities: Category = { ...commercialLiabilities },
-    public accounts: any[] = [],
+    public balances: Category = { ...commercialBalances },
     public reserves: number = 0
   ) {
-    super(id, assets, liabilities, accounts, reserves);
+    super(id, assets, liabilities, balances, reserves);
     bankLookup[id] = this;
   }
 }
@@ -142,10 +139,10 @@ export class Customer extends Bank {
     public liabilities: Category = {
       ...customerLiabilities,
     },
-    public accounts: any[] = [],
+    public balances: Category = {...customerBalances},
     public reserves: number = 100
   ) {
-    super(id, assets, liabilities, accounts, reserves);
+    super(id, assets, liabilities, balances, reserves);
     customerLookup[id] = this;
   }
 }
@@ -155,10 +152,10 @@ export class ClearingHouse extends Bank {
     public id: string = "clearinghouse",
     public assets: Category = { ...clearinghouseAssets },
     public liabilities: Category = { ...clearinghouseLiabilities },
-    public accounts: any[] = [],
+    public balances: Category = {...clearinghouseBalances},
     public reserves: number = 0
   ) {
-    super(id, assets, liabilities, accounts, reserves);
+    super(id, assets, liabilities, balances, reserves);
     bankLookup[id] = this;
   }
 }

@@ -2,7 +2,7 @@ import { IBank } from "../../classes/types";
 const BalanceSheet = ({ bank }: { bank: IBank }) => {
   return (
     <div>
-      <h3>{bank.id}</h3>
+      {/* <h3>{bank.id}</h3> */}
       <div style={{ display: "flex", flexDirection: "row" }}>
         <div
           style={{

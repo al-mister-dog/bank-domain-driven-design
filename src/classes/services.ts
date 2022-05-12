@@ -27,8 +27,8 @@ export class BankService {
       "bankDeposits",
       "bankOverdrafts",
     ]);
-    a.increaseReserves(amount)
-    b.decreaseReserves(amount)
+    a.increaseReserves(amount);
+    b.decreaseReserves(amount);
   }
   static openAccount(c: Bank, b: Bank) {
     AccountMethods.createSubordinateAccount(
@@ -43,14 +43,20 @@ export class BankService {
     SystemMethods.netDues(bank);
   }
   static settleDues() {
-    SystemMethods.settleDues()
+    SystemMethods.settleDues();
   }
   //if you only want services to be publically available
   static creditAccount(bankA: Bank, bankB: Bank, amount: number) {
-    PaymentMethods.creditAccount(bankA, bankB, amount, ["bankDeposits", "bankOverdrafts"])
+    PaymentMethods.creditAccount(bankA, bankB, amount, [
+      "bankDeposits",
+      "bankOverdrafts",
+    ]);
   }
   static debitAccount(bankA: Bank, bankB: Bank, amount: number) {
-    PaymentMethods.debitAccount(bankA, bankB, amount, ["bankDeposits", "bankOverdrafts"])
+    PaymentMethods.debitAccount(bankA, bankB, amount, [
+      "bankDeposits",
+      "bankOverdrafts",
+    ]);
   }
 }
 
@@ -60,53 +66,72 @@ export class CustomerService {
       "customerDeposits",
       "customerOverdrafts",
     ]);
-    a.decreaseReserves(amount)
-    b.increaseReserves(amount)
+    a.decreaseReserves(amount);
+    b.increaseReserves(amount);
   }
   static withdraw(a: Customer, b: CommercialBank, amount: number) {
     PaymentMethods.debitAccount(a, b, amount, [
       "customerDeposits",
       "customerOverdrafts",
     ]);
-    a.increaseReserves(amount)
-    b.decreaseReserves(amount)
+    a.increaseReserves(amount);
+    b.decreaseReserves(amount);
   }
   static automateTransferFromAccount(c: Customer) {
-    const accountWithMostCash = c.accounts.sort((acc1, acc2) => {
-      if (acc1.balance > acc2.balance) {
-        return 1;
+    const accountWithMostCash = c.balances.customerDeposits.sort(
+      (acc1, acc2) => {
+        if (acc1.amount < acc2.amount) {
+          return 1;
+        }
+
+        if (acc1.amount > acc2.amount) {
+          return -1;
+        }
+
+        return 0;
       }
-
-      if (acc1.balance < acc2.balance) {
-        return -1;
-      }
-
-      return 0;
-    });
-
-    const bankId = accountWithMostCash[0].id.split("-")[1].toString();
+    )[0];
+    const bankId = accountWithMostCash.id.split("-")[1].toString();
     const customersBank = bankLookup[bankId];
     return customersBank;
   }
   static automateTransferToAccount(c: Customer) {
-    const accountWithLeastCash = c.accounts.sort((acc1, acc2) => {
-      if (acc1.balance < acc2.balance) {
-        return 1;
-      }
+    const accountWithLeastCash = c.balances.customerDeposits.sort(
+      (acc1, acc2) => {
+        if (acc1.amount > acc2.amount) {
+          return 1;
+        }
 
-      if (acc1.balance > acc2.balance) {
-        return -1;
+        if (acc1.amount < acc2.amount) {
+          return -1;
+        }
+        return 0;
       }
-      return 0;
-    });
-    const bankId = accountWithLeastCash[0].id.split("-")[1].toString();
+    )[0];
+    const bankId = accountWithLeastCash.id.split("-")[1].toString();
     let customersBank = bankLookup[bankId];
     return customersBank;
   }
-  static transfer(customerA: Customer, customerB: Customer, amount: number) {
-    const bankA = CustomerService.automateTransferFromAccount(customerA);
-    const bankB = CustomerService.automateTransferToAccount(customerB);
-    
+  static transfer(
+    customerA: Customer,
+    customerB: Customer,
+    amount: number,
+    bank1?: Bank,
+    bank2?: Bank
+  ) {
+    let bankA: Bank;
+    let bankB: Bank;
+    if (bank1) {
+      bankA = bank1;
+    } else {
+      bankA = CustomerService.automateTransferFromAccount(customerA);
+    }
+    if (bank2) {
+      bankB = bank2;
+    } else {
+      bankB = CustomerService.automateTransferToAccount(customerB);
+    }
+
     PaymentMethods.debitAccount(customerA, bankA, amount, [
       "customerDeposits",
       "customerOverdrafts",
@@ -142,17 +167,18 @@ export class CustomerService {
       "customerLoans",
       amountPlusInterest
     );
-    b.createInstrument(
-      a.id,
-      "assets",
-      "customerLoans",
-      amountPlusInterest
-    );
-    PaymentMethods.creditAccount(a, b, amount, ["customerDeposits", "customerOverdrafts"]);
+    b.createInstrument(a.id, "assets", "customerLoans", amountPlusInterest);
+    PaymentMethods.creditAccount(a, b, amount, [
+      "customerDeposits",
+      "customerOverdrafts",
+    ]);
   }
   static repayLoan(a: Customer, b: CommercialBank, amount: number) {
-    PaymentMethods.debitAccount(a, b, amount, ["customerDeposits", "customerOverdrafts"]);
-    const loanAmount = b.assets.customerLoans.find((loan) => loan.id === a.id)
+    PaymentMethods.debitAccount(a, b, amount, [
+      "customerDeposits",
+      "customerOverdrafts",
+    ]);
+    const loanAmount = b.assets.customerLoans.find((loan) => loan.id === a.id);
     if (loanAmount) {
       if (amount > loanAmount.amount) {
         amount = loanAmount.amount;
@@ -160,7 +186,6 @@ export class CustomerService {
       a.decreaseInstrument(b.id, "liabilities", "customerLoans", amount);
       b.decreaseInstrument(a.id, "assets", "customerLoans", amount);
     }
-    
   }
   static repayLoanReserves(a: Customer, b: CommercialBank, amount: number) {
     a.decreaseReserves(amount);
@@ -170,15 +195,18 @@ export class CustomerService {
   }
 }
 
-
-
 export class ClearingHouseService {
   static settleDues() {
     for (const bank in bankLookup) {
-      
       bankLookup[bank].liabilities.dues.forEach((due) => {
-        const clearinghouseOwesBank = due.amount > 0 && bankLookup[bank].id === "clearinghouse" && due.id !== "clearinghouse"
-        const bankOwesClearinghouse = due.amount > 0 && bankLookup[bank].id !== "clearinghouse" && due.id === "clearinghouse"
+        const clearinghouseOwesBank =
+          due.amount > 0 &&
+          bankLookup[bank].id === "clearinghouse" &&
+          due.id !== "clearinghouse";
+        const bankOwesClearinghouse =
+          due.amount > 0 &&
+          bankLookup[bank].id !== "clearinghouse" &&
+          due.id === "clearinghouse";
         if (clearinghouseOwesBank) {
           PaymentMethods.creditAccount(
             bankLookup[due.id],
@@ -186,8 +214,7 @@ export class ClearingHouseService {
             due.amount,
             ["chCertificates", "chOverdrafts"]
           );
-        } 
-        else if (bankOwesClearinghouse) {
+        } else if (bankOwesClearinghouse) {
           PaymentMethods.debitAccount(
             bankLookup[bank],
             bankLookup[due.id],
@@ -207,6 +234,6 @@ export class ClearingHouseService {
       "chCertificates",
       "chOverdrafts"
     );
-    bankB.increaseReserves(amount)
+    bankB.increaseReserves(amount);
   }
 }

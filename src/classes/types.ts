@@ -5,15 +5,19 @@ export interface Account {
   type: string;
   amount: number;
 }
+
+export type Instrument = Account[];
+
 export interface Category {
   [key: string]: Instrument;
 }
-export type Instrument = Account[];
+
 export interface CategoryTypes {
   assets: Instrument;
   liabilities: Instrument;
-  accounts: object[];
+  balances: object[];
 }
+
 export interface InstrumentTypes {
   bankDeposits: Account[];
   bankOverdrafts: Account[];
@@ -24,16 +28,17 @@ export interface InstrumentTypes {
   chCertificates: Account[];
   chOverdrafts: Account[];
   customerLoans: Account[];
-  balance: Account[];
 }
 export interface IBank {
   id: string;
   assets: Category;
   liabilities: Category;
-  reserves: number
+  balances: Category;
+  reserves: number;
 }
 export type CategoryKey = keyof CategoryTypes;
 export type InstrumentKey = keyof InstrumentTypes;
+
 export interface IBankLookup {
   [key: string]: Bank;
 }

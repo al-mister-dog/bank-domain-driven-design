@@ -19,23 +19,23 @@ describe("balance sheet accounting", () => {
       const { bank1, customer1, customer2 } = createBanksAndCustomers();
       CustomerService.openAccount(customer1, bank1);
       CustomerService.openAccount(customer2, bank1);
-      expect(customer1.accounts.length).toBe(1);
-      expect(customer2.accounts.length).toBe(1);
-      expect(bank1.accounts.length).toBe(2);
+      expect(customer1.balances.customerDeposits.length).toBe(1);
+      expect(customer2.balances.customerDeposits.length).toBe(1);
+      expect(bank1.balances.customerDeposits.length).toBe(2);
     });
     it("creates an account in customer with a bank id on openAccount", () => {
       const { bank1, customer1, customer2 } = createBanksAndCustomers();
       CustomerService.openAccount(customer1, bank1);
       CustomerService.openAccount(customer2, bank1);
-      expect(customer1.accounts[0].id).toBe(`${customer1.id}-${bank1.id}`);
-      expect(customer2.accounts[0].id).toBe(`${customer2.id}-${bank1.id}`);
+      expect(customer1.balances.customerDeposits[0].id).toBe(`${customer1.id}-${bank1.id}`);
+      expect(customer2.balances.customerDeposits[0].id).toBe(`${customer2.id}-${bank1.id}`);
     });
     it("creates an account in bank with an ordered set id on openAccount", () => {
       const { bank1, customer1, customer2 } = createBanksAndCustomers();
       CustomerService.openAccount(customer1, bank1);
       CustomerService.openAccount(customer2, bank1);
-      expect(bank1.accounts[0].id).toBe(`${customer1.id}-${bank1.id}`);
-      expect(bank1.accounts[1].id).toBe(`${customer2.id}-${bank1.id}`);
+      expect(bank1.balances.customerDeposits[0].id).toBe(`${customer1.id}-${bank1.id}`);
+      expect(bank1.balances.customerDeposits[1].id).toBe(`${customer2.id}-${bank1.id}`);
     });
     it("decreases customer1 balance on transfer", () => {
       const { bank1, customer1, customer2 } = createBanksAndCustomers();
@@ -43,8 +43,8 @@ describe("balance sheet accounting", () => {
       CustomerService.openAccount(customer2, bank1);
       CustomerService.transfer(customer1, customer2, 50);
 
-      expect(customer1.accounts[0].balance).toBe(-50);
-      expect(customer2.accounts[0].balance).toBe(50);
+      expect(customer1.balances.customerDeposits[0].amount).toBe(-50);
+      expect(customer2.balances.customerDeposits[0].amount).toBe(50);
     });
     it("decrease customer1 assets on transfer", () => {
       const { bank1, customer1, customer2 } = createBanksAndCustomers();
@@ -111,24 +111,24 @@ describe("balance sheet accounting", () => {
       const { bank1, bank2, customer1, customer2 } = createBanksAndCustomers();
       CustomerService.openAccount(customer1, bank1);
       CustomerService.openAccount(customer2, bank2);
-      expect(customer1.accounts.length).toBe(1);
-      expect(customer2.accounts.length).toBe(1);
-      expect(bank1.accounts.length).toBe(1);
-      expect(bank2.accounts.length).toBe(1);
+      expect(customer1.balances.customerDeposits.length).toBe(1);
+      expect(customer2.balances.customerDeposits.length).toBe(1);
+      expect(bank1.balances.customerDeposits.length).toBe(1);
+      expect(bank2.balances.customerDeposits.length).toBe(1);
     });
     it("creates an account in customer with ordered-set id (bank-customer) on openAccount", () => {
       const { bank1, bank2, customer1, customer2 } = createBanksAndCustomers();
       CustomerService.openAccount(customer1, bank1);
       CustomerService.openAccount(customer2, bank2);
-      expect(customer1.accounts[0].id).toBe(`${customer1.id}-${bank1.id}`);
-      expect(customer2.accounts[0].id).toBe(`${customer2.id}-${bank2.id}`);
+      expect(customer1.balances.customerDeposits[0].id).toBe(`${customer1.id}-${bank1.id}`);
+      expect(customer2.balances.customerDeposits[0].id).toBe(`${customer2.id}-${bank2.id}`);
     });
     it("creates an account in bank with ordered-set id (bank-customer) on openAccount", () => {
       const { bank1, bank2, customer1, customer2 } = createBanksAndCustomers();
       CustomerService.openAccount(customer1, bank1);
       CustomerService.openAccount(customer2, bank2);
-      expect(bank1.accounts[0].id).toBe(`${customer1.id}-${bank1.id}`);
-      expect(bank2.accounts[0].id).toBe(`${customer2.id}-${bank2.id}`);
+      expect(bank1.balances.customerDeposits[0].id).toBe(`${customer1.id}-${bank1.id}`);
+      expect(bank2.balances.customerDeposits[0].id).toBe(`${customer2.id}-${bank2.id}`);
     });
     it("decrease customer1 balance on transfer", () => {
       const { bank1, bank2, customer1, customer2 } = createBanksAndCustomers();
@@ -137,8 +137,8 @@ describe("balance sheet accounting", () => {
       BankService.openAccount(bank1, bank2);
       BankService.openAccount(bank2, bank1);
       CustomerService.transfer(customer1, customer2, 50);
-      expect(customer1.accounts[0].balance).toBe(-50);
-      expect(customer2.accounts[0].balance).toBe(50);
+      expect(customer1.balances.customerDeposits[0].amount).toBe(-50);
+      expect(customer2.balances.customerDeposits[0].amount).toBe(50);
     });
     it("decrease customer1 assets on transfer", () => {
       const { bank1, bank2, customer1, customer2 } = createBanksAndCustomers();

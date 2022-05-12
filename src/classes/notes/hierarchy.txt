@@ -30,7 +30,7 @@ bankA doubts the ability of bankB to pay a potential debt
 
 
 goal for the time being
-all credit instruments to increase decrease balances, go into debt and go into credit
+all credit instruments to increase decrease accounts, go into debt and go into credit
 forms of credit instruments
 customer deposits
 customer overdraft
@@ -40,7 +40,7 @@ bank overdraft
 
 processes
 step1
-add or subtract balances
+add or subtract accounts
 check if this puts bank into credit or debt
 add credit and debt statuses to correspondent accounts
 
@@ -183,21 +183,21 @@ hsbc.liabilities.bankOverdrafts: { id: 'BARCLAYS', amount: 100 }
 ids
 if hsbc opens an account with barclays it would look like this
 HSBC
-balancesId BARCLAYS
+accountsId BARCLAYS
 assets.depositsId BARCLAYS
 liabilities.overdraftId BARCLAYS
 BARCLAYS
-balancesId HSBC
+accountsId HSBC
 liabilities.depositsId HSBC
 assets.overdraftId HSBC
 
 if barclays opens an account with hsbc it would look like this
 BARCLAYS
-balancesId HSBC
+accountsId HSBC
 assets.depositsId HSBC
 liabilities.overdraftId HSBC
 HSBC
-balancesId BARCLAYS
+accountsId BARCLAYS
 liabilities.depositsId BARCLAYS
 asset.overdraftID BARCLAYS
 
@@ -206,16 +206,16 @@ we need a better identifier
 if hsbc opens an account with barclays
 corresponding ids
 HSBC
-balancesId HSBC-BARCLAYS
+accountsId HSBC-BARCLAYS
 BARCLAYS
-balances HSBC-BARCLAYS
+accounts HSBC-BARCLAYS
 
 if barclays opens an account with hsbc
 corresponding ids
 BARCLAYS
-balancesId BARCLAYS-HSBC
+accountsId BARCLAYS-HSBC
 HSBC
-balances BARCLAYS-HSBC
+accounts BARCLAYS-HSBC
 
 the bank on the left handside of the id denotes the fact that the left handside bank
 can run an overdraft with the bank on the righthandside
@@ -370,4 +370,4 @@ assets/liabilities
 
 customer opens account with bank
 customer has: assets.deposits, liabilities.overdraft
-bank has: liabilities.deposits, assets.overdraft, balances.deposits
+bank has: liabilities.deposits, assets.overdraft, accounts.deposits

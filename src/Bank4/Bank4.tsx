@@ -1,11 +1,8 @@
 import { SetStateAction, useState } from "react";
 import "../App.css";
 import BankComponent from "../components/ui/BankComponent";
-import {
-  Customer,
-  CommercialBank,
-  Bank,
-} from "../classes/instances";
+import SelectedCustomer from "../components/ui/SelectedCustomer";
+import { Customer, CommercialBank, Bank } from "../classes/instances";
 
 import {
   CustomerService,
@@ -16,17 +13,22 @@ import {
 import CustomerComponent from "../components/ui/CustomerComponent";
 import ClearingHouseComponent from "../components/ui/ClearingHouseComponent";
 
-import {clearinghouseSystem} from "./state"
-const {clearinghouse, bank1, bank2, customer1, customer2} = clearinghouseSystem()
+import { clearinghouseSystem } from "./state";
+const { clearinghouse, bank1, bank2, customer1, customer2 } =
+  clearinghouseSystem();
 
 function App() {
-  const state = {clearinghouse, bank1, bank2, customer1, customer2}
-  const [stateTracker, setStateTracker] = useState(state)
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(
+    null
+  );
   const [banks, setBanks] = useState<Bank[]>([bank1, bank2]);
   const [customers, setCustomers] = useState<Customer[]>([
     customer1,
     customer2,
   ]);
+  function selectCustomer(customer: Customer) {
+    setSelectedCustomer(customer);
+  }
 
   //components
   const BankComponents = banks.map((bank) => (
@@ -34,15 +36,18 @@ function App() {
   ));
   const CustomerComponents = customers.map((customer) => {
     const otherCustomers = customers.filter((c) => c.id !== customer.id);
-    const customersBankId = customer.accounts[0].id.split("-")[1];
+    const customersBankId =
+      customer.balances.customerDeposits[0].id.split("-")[1];
     const bank = banks.filter((b) => b.id === customersBankId);
     return (
+      
       <CustomerComponent
         customer1={customer}
         customer2={otherCustomers[0]}
         bank1={bank[0]}
         transfer={transfer}
         deposit={deposit}
+        selectCustomer={selectCustomer}
       />
     );
   });
@@ -60,7 +65,6 @@ function App() {
   }) => {
     setNewBankId(event.target.value);
   };
-
 
   //create functions
   function createCustomer() {
@@ -81,21 +85,20 @@ function App() {
   //component functions
   function transfer(customer1: Customer, customer2: Customer) {
     CustomerService.transfer(customer1, customer2, 50);
-    // setBanks([...banks])
-    setStateTracker({...state})
+    setBanks([...banks]);
   }
   function deposit(customer1: Customer, bank1: Customer) {
     CustomerService.deposit(customer1, bank1, 50);
-    setBanks([...banks])
+    setBanks([...banks]);
   }
   function netDues() {
     BankService.netDues(bank1);
     BankService.netDues(bank2);
-    setBanks([...banks])
+    setBanks([...banks]);
   }
   function settleDues() {
     ClearingHouseService.settleDues();
-    setBanks([...banks])
+    setBanks([...banks]);
   }
   return (
     <div style={{ display: "flex" }}>
@@ -117,7 +120,7 @@ function App() {
           return customer;
         })}
       </div>
-      <div style={{width: "30vw"}}>
+      <div style={{ width: "30vw" }}>
         <div>
           <input
             type="text"
@@ -140,7 +143,11 @@ function App() {
           />
           <button onClick={createBank}>Create Bank</button>
         </div>
-        {JSON.stringify(bank1)}
+        {/* <SelectedCustomer
+          customer={selectedCustomer}
+          transfer={transfer}
+          deposit={deposit}
+        /> */}
       </div>
     </div>
   );
