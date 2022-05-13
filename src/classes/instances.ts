@@ -134,7 +134,17 @@ export class Bank implements IBank {
     }
     return num === -timesIndebted ? true : false;
   }
-  isDebtorOnAverage() {}
+  isGeneralDebtor() {
+    const creditTransactions = this.records.filter((record) => record.credit === true)
+    const debtTransactions = this.records.filter((record) => record.credit === false)
+    return debtTransactions.length > creditTransactions.length
+  }
+  creditStatus() {
+    const creditTransactions = this.records.filter((record) => record.credit === true)
+    const totalTransactions = this.records.length;
+    const timesInCredit = creditTransactions.length;
+    return  Math.round(timesInCredit / totalTransactions * 100)
+  }
 }
 
 export class CommercialBank extends Bank {

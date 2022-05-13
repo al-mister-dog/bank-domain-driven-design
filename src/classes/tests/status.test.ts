@@ -238,37 +238,28 @@ describe("records", () => {
     CustomerService.withdraw(customer1, bank1, 100);
     expect(customer1.inOverdraft()).toBe(true);
   });
-  it("continuous debtor status should be true if bank has been a debtor continuously for number of most recent times specified", () => {
-    System.setSystem("clearinghouse");
-    const { bank1, bank2, customer1, customer2 } =
-      clearinghousePlusCertificates();
-    CustomerService.openAccount(customer1, bank1);
-    CustomerService.openAccount(customer2, bank2);
-    CustomerService.deposit(customer1, bank1, 100);
-    CustomerService.deposit(customer2, bank2, 100);
+  function debtBasedTransaction(
+    customer1: Customer,
+    customer2: Customer,
+    bank1: CommercialBank,
+    bank2: CommercialBank
+  ) {
     CustomerService.transfer(customer1, customer2, 50);
     BankService.netDues(bank1);
     BankService.netDues(bank2);
     ClearingHouseService.settleDues();
-    CustomerService.transfer(customer1, customer2, 50);
+  }
+  function creditBasedTransaction(
+    customer1: Customer,
+    customer2: Customer,
+    bank1: CommercialBank,
+    bank2: CommercialBank
+  ) {
+    CustomerService.transfer(customer2, customer1, 50);
     BankService.netDues(bank1);
     BankService.netDues(bank2);
     ClearingHouseService.settleDues();
-    CustomerService.transfer(customer1, customer2, 50);
-    BankService.netDues(bank1);
-    BankService.netDues(bank2);
-    ClearingHouseService.settleDues();
-    // CustomerService.transfer(customer2, customer1, 50);
-    // BankService.netDues(bank1);
-    // BankService.netDues(bank2);
-    // ClearingHouseService.settleDues();
-    // CustomerService.transfer(customer2, customer1, 50);
-    // BankService.netDues(bank1);
-    // BankService.netDues(bank2);
-    // ClearingHouseService.settleDues();
-
-    expect(bank1.isConstantDebtor(3)).toBe(true);
-  });
+  }
   it("continuous debtor status should be false if bank has not been a debtor continuously for number of most recent times specified", () => {
     System.setSystem("clearinghouse");
     const { bank1, bank2, customer1, customer2 } =
@@ -277,26 +268,89 @@ describe("records", () => {
     CustomerService.openAccount(customer2, bank2);
     CustomerService.deposit(customer1, bank1, 100);
     CustomerService.deposit(customer2, bank2, 100);
-    CustomerService.transfer(customer1, customer2, 50);
-    BankService.netDues(bank1);
-    BankService.netDues(bank2);
-    ClearingHouseService.settleDues();
-    CustomerService.transfer(customer1, customer2, 50);
-    BankService.netDues(bank1);
-    BankService.netDues(bank2);
-    ClearingHouseService.settleDues();
-    CustomerService.transfer(customer1, customer2, 50);
-    BankService.netDues(bank1);
-    BankService.netDues(bank2);
-    ClearingHouseService.settleDues();
-    CustomerService.transfer(customer2, customer1, 50);
-    BankService.netDues(bank1);
-    BankService.netDues(bank2);
-    ClearingHouseService.settleDues();
-    CustomerService.transfer(customer2, customer1, 50);
-    BankService.netDues(bank1);
-    BankService.netDues(bank2);
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    creditBasedTransaction(customer1, customer2, bank1, bank2)
+    creditBasedTransaction(customer1, customer2, bank1, bank2)
     ClearingHouseService.settleDues();
     expect(bank1.isConstantDebtor(3)).toBe(false);
   });
+  it("continuous debtor status should be true if bank has been a debtor continuously for number of most recent times specified", () => {
+    System.setSystem("clearinghouse");
+    const { bank1, bank2, customer1, customer2 } =
+      clearinghousePlusCertificates();
+    CustomerService.openAccount(customer1, bank1);
+    CustomerService.openAccount(customer2, bank2);
+    CustomerService.deposit(customer1, bank1, 100);
+    CustomerService.deposit(customer2, bank2, 100);
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    expect(bank1.isConstantDebtor(3)).toBe(true);
+  });
+  it("should confer general debtor status to a bank that is a debtor more than a creditor", () => {
+    System.setSystem("clearinghouse");
+    const { bank1, bank2, customer1, customer2 } =
+      clearinghousePlusCertificates();
+    CustomerService.openAccount(customer1, bank1);
+    CustomerService.openAccount(customer2, bank2);
+    CustomerService.deposit(customer1, bank1, 100);
+    CustomerService.deposit(customer2, bank2, 100);
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    creditBasedTransaction(customer1, customer2, bank1, bank2)
+    creditBasedTransaction(customer1, customer2, bank1, bank2)
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    expect(bank1.isGeneralDebtor()).toBe(true);
+  })
+  it("should not confer general debtor status to a bank that is a creditor more than a debtor", () => {
+    System.setSystem("clearinghouse");
+    const { bank1, bank2, customer1, customer2 } =
+      clearinghousePlusCertificates();
+    CustomerService.openAccount(customer1, bank1);
+    CustomerService.openAccount(customer2, bank2);
+    CustomerService.deposit(customer1, bank1, 100);
+    CustomerService.deposit(customer2, bank2, 100);
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    creditBasedTransaction(customer1, customer2, bank1, bank2)
+    creditBasedTransaction(customer1, customer2, bank1, bank2)
+    creditBasedTransaction(customer1, customer2, bank1, bank2)
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    expect(bank1.isGeneralDebtor()).toBe(false);
+  })
+  it("should not confer general debtor status to a bank that is a creditor as much as a debtor", () => {
+    System.setSystem("clearinghouse");
+    const { bank1, bank2, customer1, customer2 } =
+      clearinghousePlusCertificates();
+    CustomerService.openAccount(customer1, bank1);
+    CustomerService.openAccount(customer2, bank2);
+    CustomerService.deposit(customer1, bank1, 100);
+    CustomerService.deposit(customer2, bank2, 100);
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    creditBasedTransaction(customer1, customer2, bank1, bank2)
+    creditBasedTransaction(customer1, customer2, bank1, bank2)
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    expect(bank1.isGeneralDebtor()).toBe(false);
+  })
+  it("should confer a credit score based on percentage of credit based transactions", () => {
+    System.setSystem("clearinghouse");
+    const { bank1, bank2, customer1, customer2 } =
+      clearinghousePlusCertificates();
+    CustomerService.openAccount(customer1, bank1);
+    CustomerService.openAccount(customer2, bank2);
+    CustomerService.deposit(customer1, bank1, 100);
+    CustomerService.deposit(customer2, bank2, 100);
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    debtBasedTransaction(customer1, customer2, bank1, bank2)
+    creditBasedTransaction(customer1, customer2, bank1, bank2)
+    creditBasedTransaction(customer1, customer2, bank1, bank2)
+    creditBasedTransaction(customer1, customer2, bank1, bank2)
+    creditBasedTransaction(customer1, customer2, bank1, bank2)
+    expect(bank1.creditStatus()).toBe(40);
+  })
 });
