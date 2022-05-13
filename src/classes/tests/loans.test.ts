@@ -4,7 +4,7 @@ import { CustomerService } from "../services";
 import { System } from "../systems";
 
 function createLoanSystem() {
-  System.setSystem("none")
+  System.setSystem()
   const hsbc = new CommercialBank("HSBC");
   const johnDoe = new Customer("JOHN_DOE");
   CustomerService.openAccount(

@@ -5,7 +5,7 @@ import { Customer, CommercialBank } from "../instances";
 import { CustomerService, BankService } from "../services";
 
 function createBanksAndCustomers() {
-  System.setSystem("none");
+  System.setSystem();
   const bank1 = new CommercialBank("Bank1");
   const bank2 = new CommercialBank("Bank2");
   const customer1 = new Customer("CUSTOMER1");

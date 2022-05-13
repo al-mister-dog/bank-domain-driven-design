@@ -12,19 +12,20 @@ export let SystemMethods: SystemType;
 export let systemCheck = "";
 
 export class System {
-  static setSystem(sys: string) {
-    if (sys === "correspondent") {
+  static setSystem(sys?: string) {
+    if (!sys) {
+      SystemMethods = new DefaultSystem();
+      systemCheck = "default";
+    }
+    else if (sys === "correspondent") {
       SystemMethods = new CorrespondentSystem();
       systemCheck = "correspondent";
     }
-    if (sys === "clearinghouse") {
+    else if (sys === "clearinghouse") {
       SystemMethods = new ClearingHouseSystem();
       systemCheck = "clearinghouse";
     }
-    if (sys === "none") {
-      SystemMethods = new NoSystem();
-      systemCheck = "none";
-    }
+    
   }
 }
 
@@ -148,7 +149,7 @@ class ClearingHouseSystem extends AbstractSystem {
   }
 }
 
-class NoSystem extends AbstractSystem {
+class DefaultSystem extends AbstractSystem {
   increaseDues(bankA: Bank, bankB: Bank, amount: number): void {}
   netDues(bank: Bank): void {}
   settleDues(): void {}
