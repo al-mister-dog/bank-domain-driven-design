@@ -111,40 +111,6 @@ export class Bank implements IBank {
   decreaseReserves(amount: number) {
     this.reserves -= amount;
   }
-
-  //STATUS FUNCTIONS
-  inOverdraft() {
-    const potentialOverdrafts = Object.entries(this.liabilities).map(
-      ([liabilityKey, liabilities]) => {
-        return liabilities.find((liability) => liability.amount > 0);
-      }
-    );
-    const overdrafts = potentialOverdrafts.filter((o) => o !== undefined);
-    return overdrafts.length > 0 ? true : false;
-  }
-  isConstantDebtor(timesIndebted: number) {
-    let num = 0;
-    for (
-      let i = this.records.length - 1;
-      i > this.records.length - (timesIndebted + 1);
-      i--
-    ) {
-      console.log(this.records[i].credit)
-      this.records[i].credit ? num++ : num--;
-    }
-    return num === -timesIndebted ? true : false;
-  }
-  isGeneralDebtor() {
-    const creditTransactions = this.records.filter((record) => record.credit === true)
-    const debtTransactions = this.records.filter((record) => record.credit === false)
-    return debtTransactions.length > creditTransactions.length
-  }
-  creditStatus() {
-    const creditTransactions = this.records.filter((record) => record.credit === true)
-    const totalTransactions = this.records.length;
-    const timesInCredit = creditTransactions.length;
-    return  Math.round(timesInCredit / totalTransactions * 100)
-  }
 }
 
 export class CommercialBank extends Bank {

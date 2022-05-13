@@ -116,6 +116,47 @@ export class AccountMethods {
   }
 }
 
+export class StatusMethods {
+  static inOverdraft(bank: Bank) {
+    const potentialOverdrafts = Object.entries(bank.liabilities).map(
+      ([liabilityKey, liabilities]) => {
+        return liabilities.find((liability) => liability.amount > 0);
+      }
+    );
+    const overdrafts = potentialOverdrafts.filter((o) => o !== undefined);
+    return overdrafts.length > 0 ? true : false;
+  }
+  static isConstantDebtor(bank: Bank, timesIndebted: number) {
+    let num = 0;
+    for (
+      let i = bank.records.length - 1;
+      i > bank.records.length - (timesIndebted + 1);
+      i--
+    ) {
+      console.log(bank.records[i].credit);
+      bank.records[i].credit ? num++ : num--;
+    }
+    return num === -timesIndebted ? true : false;
+  }
+  static isGeneralDebtor(bank: Bank) {
+    const creditTransactions = bank.records.filter(
+      (record) => record.credit === true
+    );
+    const debtTransactions = bank.records.filter(
+      (record) => record.credit === false
+    );
+    return debtTransactions.length > creditTransactions.length;
+  }
+  static creditStatus(bank: Bank) {
+    const creditTransactions = bank.records.filter(
+      (record) => record.credit === true
+    );
+    const totalTransactions = bank.records.length;
+    const timesInCredit = creditTransactions.length;
+    return Math.round((timesInCredit / totalTransactions) * 100);
+  }
+}
+
 function createRecord(
   a: Bank,
   b: Bank,
@@ -130,7 +171,7 @@ function createRecord(
     accountType: creditInstrument,
     transactionAmount,
     balance,
-    credit
-  }
-  a.records.push(record)
+    credit,
+  };
+  a.records.push(record);
 }
