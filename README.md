@@ -14,7 +14,7 @@ Correspondent and Clearinghouse Banking 1853-1913 /
 Federal Reserve System 1913-2008 /
 QE era FED 2008-present /
 
-The user interface is currently under construction
+The user interface is currently under construction. The core of the program can be found in src/classes
 
 
 
