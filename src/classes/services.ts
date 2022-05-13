@@ -77,7 +77,7 @@ export class CustomerService {
     a.increaseReserves(amount);
     b.decreaseReserves(amount);
   }
-  static automateTransferFromAccount(c: Customer) {
+  private static automateTransferFromAccount(c: Customer) {
     const accountWithMostCash = c.balances.customerDeposits.sort(
       (acc1, acc2) => {
         if (acc1.amount < acc2.amount) {
@@ -95,7 +95,7 @@ export class CustomerService {
     const customersBank = bankLookup[bankId];
     return customersBank;
   }
-  static automateTransferToAccount(c: Customer) {
+  private static automateTransferToAccount(c: Customer) {
     const accountWithLeastCash = c.balances.customerDeposits.sort(
       (acc1, acc2) => {
         if (acc1.amount > acc2.amount) {
@@ -144,9 +144,9 @@ export class CustomerService {
       SystemMethods.increaseDues(bankA, bankB, amount);
     }
   }
-  static openAccount(bankA: Bank, bankB: Bank) {
+  static openAccount(customer: Customer, bankB: Bank) {
     AccountMethods.createSubordinateAccount(
-      bankA,
+      customer,
       bankB,
       0,
       "customerDeposits",
@@ -235,5 +235,11 @@ export class ClearingHouseService {
       "chOverdrafts"
     );
     bankB.increaseReserves(amount);
+  }
+}
+
+class StatusCheckService {
+  static overdraft(b: Bank) {
+    return b.assets;
   }
 }

@@ -153,3 +153,4 @@ class NoSystem extends AbstractSystem {
   netDues(bank: Bank): void {}
   settleDues(): void {}
 }
+

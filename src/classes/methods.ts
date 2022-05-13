@@ -25,6 +25,7 @@ export class PaymentMethods {
         debtInstrument,
         account.amount
       );
+      createRecord(a, b, creditInstrument, amount, account.amount, true);
     }
   }
 
@@ -49,6 +50,7 @@ export class PaymentMethods {
         debtInstrument,
         account.amount
       );
+      createRecord(a, b, creditInstrument, amount, account.amount, false);
     }
   }
 
@@ -112,4 +114,23 @@ export class AccountMethods {
     b.createInstrument(a.id, "liabilities", creditInstrument, amount);
     AccountMethods.createBalance(a, b, amount, creditInstrument);
   }
+}
+
+function createRecord(
+  a: Bank,
+  b: Bank,
+  creditInstrument: InstrumentKey,
+  transactionAmount: number,
+  balance: number,
+  credit: boolean
+) {
+  const record = {
+    id: `${a.id}`,
+    accountId: `${a.id}-${b.id}`,
+    accountType: creditInstrument,
+    transactionAmount,
+    balance,
+    credit
+  }
+  a.records.push(record)
 }

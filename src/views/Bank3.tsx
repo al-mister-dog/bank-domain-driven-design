@@ -1,19 +1,19 @@
 import { SetStateAction, useState } from "react";
 import "./App.css";
-import BankComponent from "./components/ui/BankComponent";
-import SelectedCustomer from "./components/ui/SelectedCustomer";
-import { Customer, CommercialBank, Bank } from "./classes/instances";
+import BankComponent from "../components/ui/BankComponent";
+import SelectedCustomer from "../components/ui/SelectedCustomer";
+import { Customer, CommercialBank, Bank } from "../classes/instances";
 
 import {
   CustomerService,
   BankService,
   ClearingHouseService,
-} from "./classes/services";
+} from "../classes/services";
 
-import ClearingHouseComponent from "./components/ui/ClearingHouseComponent";
+import ClearingHouseComponent from "../components/ui/ClearingHouseComponent";
 
-import { clearinghouseSystem } from "./Bank4/state";
-import CustomerSelect from "./components/ui/CustomerSelect";
+import { clearinghouseSystem } from "./state";
+import CustomerSelect from "../components/ui/CustomerSelect";
 const { clearinghouse, bank1, bank2, customer1, customer2 } =
   clearinghouseSystem();
 

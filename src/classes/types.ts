@@ -45,3 +45,11 @@ export interface IBankLookup {
 export interface ICustomerLookup {
   [key: string]: Customer;
 }
+export interface IRecord {
+  id: string,
+  accountId: string,
+  accountType: InstrumentKey,
+  transactionAmount: number,
+  balance: number,
+  credit: boolean,
+}
