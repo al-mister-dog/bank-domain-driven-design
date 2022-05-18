@@ -28,6 +28,7 @@ export interface InstrumentTypes {
   chCertificates: Account[];
   chOverdrafts: Account[];
   customerLoans: Account[];
+  billsOfExchange: Account[];
 }
 export interface IBank {
   id: string;

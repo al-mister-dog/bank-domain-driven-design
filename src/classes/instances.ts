@@ -156,3 +156,17 @@ export class ClearingHouse extends Bank {
     bankLookup[id] = this;
   }
 }
+
+export class ExchangeBank extends Bank {
+  constructor(
+    public id: string,
+    public assets: Category = { ...clearinghouseAssets },
+    public liabilities: Category = { ...clearinghouseLiabilities },
+    public balances: Category = { ...clearinghouseBalances },
+    public reserves: number = 0,
+    public records: IRecord[] = []
+  ) {
+    super(id, assets, liabilities, balances, reserves, records);
+    bankLookup[id] = this;
+  }
+}

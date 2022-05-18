@@ -48,3 +48,17 @@ export const clearinghouseLiabilities = {
 export const clearinghouseBalances = {
   chCertificates: [],
 };
+
+export const exchangeBankAssets = {
+  billsOfExchange: [],
+  currency: [],
+}
+
+export const exchangeBankLiabilities = {
+  billsOfExchange: [],
+  currency: [],
+}
+
+export const exchangeBankBalances = {
+  currency: [],
+}
