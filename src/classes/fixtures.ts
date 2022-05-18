@@ -50,15 +50,32 @@ export const clearinghouseBalances = {
 };
 
 export const exchangeBankAssets = {
+  bankDeposits: [],
+  bankOverdrafts: [],
   billsOfExchange: [],
   currency: [],
-}
+};
 
 export const exchangeBankLiabilities = {
+  bankDeposits: [],
+  bankOverdrafts: [],
   billsOfExchange: [],
   currency: [],
-}
+};
+
+export const exchangeBankAccounts = {
+  nostro: [], //our account in their bank and their currency
+  vostro: [], //their account in our bank and in our currency
+};
 
 export const exchangeBankBalances = {
-  currency: [],
+  bankDeposits: [],
+};
+
+export const traderAssets = {
+  billsOfExchange: []
+}
+
+export const traderLiabilities = {
+  billsOfExchange: []
 }

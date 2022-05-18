@@ -8,6 +8,12 @@ import {
   customerLiabilities,
   customerAssets,
   customerBalances,
+  exchangeBankAssets,
+  exchangeBankLiabilities,
+  exchangeBankBalances,
+  exchangeBankAccounts,
+  traderAssets,
+  traderLiabilities,
 } from "./fixtures";
 import { bankLookup, customerLookup } from "./lookupTables";
 
@@ -18,6 +24,8 @@ import {
   CategoryKey,
   InstrumentKey,
   Account,
+  Currency,
+  Bill,
 } from "./types";
 
 export class Bank implements IBank {
@@ -70,9 +78,11 @@ export class Bank implements IBank {
     category: CategoryKey,
     instrument: InstrumentKey
   ) {
-    const index = this[category][instrument].findIndex((acc: Account) => {
-      return acc.id === id;
-    });
+    const index = this[category][instrument].findIndex(
+      (acc: Account | Bill) => {
+        return acc.id === id;
+      }
+    );
     return index;
   }
 
@@ -157,16 +167,35 @@ export class ClearingHouse extends Bank {
   }
 }
 
-export class ExchangeBank extends Bank {
+
+
+// MEDICI
+interface MediciAccount {
+  nostro: Account[],
+  vostro: Account[],
+}
+interface MediciCategory {
+  [key: string]: any;
+}
+export class ExchangeBank {
   constructor(
     public id: string,
-    public assets: Category = { ...clearinghouseAssets },
-    public liabilities: Category = { ...clearinghouseLiabilities },
-    public balances: Category = { ...clearinghouseBalances },
-    public reserves: number = 0,
-    public records: IRecord[] = []
-  ) {
-    super(id, assets, liabilities, balances, reserves, records);
-    bankLookup[id] = this;
-  }
+    public city: string,
+    public assets: MediciCategory = { ...exchangeBankAssets },
+    public liabilities: MediciCategory = { ...exchangeBankLiabilities },
+    public exchangeUnit: number = 10,
+    public reserves: number = 100,
+    public accounts: MediciAccount = {nostro: [], vostro: []}
+  ) {}
+}
+
+export class Trader {
+  constructor(
+    public id: string,
+    public city: string,
+    public assets: MediciCategory = { ...traderAssets },
+    public liabilities: MediciCategory = { ...traderLiabilities },
+    public reserves: number = 100,
+    public goods: number = 100
+  ) {}
 }

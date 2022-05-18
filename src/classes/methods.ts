@@ -112,7 +112,7 @@ export class AccountMethods {
     a.createInstrument(b.id, "liabilities", debtInstrument, 0);
     b.createInstrument(a.id, "assets", debtInstrument, 0);
     b.createInstrument(a.id, "liabilities", creditInstrument, amount);
-    AccountMethods.createBalance(a, b, amount, creditInstrument);
+    // AccountMethods.createBalance(a, b, amount, creditInstrument);
   }
 }
 

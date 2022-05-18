@@ -1,8 +1,16 @@
 import { Bank, Customer } from "./instances";
 
-export interface Account {
+export type Account = {
   id: string;
   type: string;
+  amount: number;
+} 
+
+export interface Bill {
+  id: string;
+  dueTo: string;
+  dueFrom: string;
+  city: string;
   amount: number;
 }
 
@@ -28,7 +36,7 @@ export interface InstrumentTypes {
   chCertificates: Account[];
   chOverdrafts: Account[];
   customerLoans: Account[];
-  billsOfExchange: Account[];
+  billsOfExchange: Bill[];
 }
 export interface IBank {
   id: string;
@@ -54,3 +62,5 @@ export interface IRecord {
   balance: number,
   credit: boolean,
 }
+
+export type Currency = "ecus" | "sterling" | "marc" | "lyonaise"

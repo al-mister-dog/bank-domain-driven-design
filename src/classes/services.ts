@@ -1,7 +1,16 @@
-import { Bank, CommercialBank, Customer } from "./instances";
+import {
+  Bank,
+  CommercialBank,
+  Customer,
+  ExchangeBank,
+  Trader,
+} from "./instances";
 import { SystemMethods } from "./systems";
 import { PaymentMethods, AccountMethods } from "./methods";
 import { bankLookup } from "./lookupTables";
+import { Bill } from "./types";
+
+
 
 interface SystemLookup {
   [key: string]: boolean;
@@ -30,11 +39,11 @@ export class BankService {
     a.increaseReserves(amount);
     b.decreaseReserves(amount);
   }
-  static openAccount(c: Bank, b: Bank) {
+  static openAccount(a: Bank, b: Bank, amount: number = 0) {
     AccountMethods.createSubordinateAccount(
-      c,
+      a,
       b,
-      0,
+      amount,
       "bankDeposits",
       "bankOverdrafts"
     );
@@ -238,8 +247,146 @@ export class ClearingHouseService {
   }
 }
 
-class StatusCheckService {
-  static overdraft(b: Bank) {
-    return b.assets;
+
+interface ExchangeLookup {
+  [key: string]: number;
+}
+interface CertaintyLookup {
+  [key: string]: boolean;
+}
+const exchangeRates: ExchangeLookup = {
+  florence: 66,
+  lyons: 64,
+};
+const certaintyQuotes: CertaintyLookup = {
+  florence: false,
+  lyons: true,
+};
+export class ExchangeBankService {
+  static createCorrespondence(
+    bankA: ExchangeBank,
+    bankB: ExchangeBank,
+    amount: number
+  ) {
+    bankA.accounts.vostro = [
+      ...bankA.accounts.vostro,
+      { id: bankB.id, type: "bankDeposits", amount },
+    ];
+    bankA.accounts.nostro = [
+      ...bankA.accounts.nostro,
+      { id: bankB.id, type: "bankDeposits", amount },
+    ];
+    bankB.accounts.vostro = [
+      ...bankB.accounts.vostro,
+      { id: bankA.id, type: "bankDeposits", amount },
+    ];
+    bankB.accounts.nostro = [
+      ...bankB.accounts.nostro,
+      { id: bankA.id, type: "bankDeposits", amount },
+    ];
+    BankService.openAccount(bankA, bankB, amount);
+    BankService.openAccount(bankB, bankA, amount);
+  }
+  static trade(importer: Trader, exporter: Trader, amount: number) {
+    const date = new Date().toISOString();
+    const bill = {
+      id: date,
+      dueTo: exporter.id,
+      dueFrom: importer.id,
+      city: importer.city,
+      amount: amount,
+    };
+    importer.liabilities.billsOfExchange = [
+      ...importer.liabilities.billsOfExchange,
+      bill,
+    ];
+    importer.goods = amount;
+    exporter.assets.billsOfExchange = [
+      ...exporter.assets.billsOfExchange,
+      bill,
+    ];
+  }
+
+  static drawBill(
+    bearer: Trader,
+    exchangeBank: ExchangeBank,
+    presentedBill: Bill
+  ) {
+    if (presentedBill.dueTo === bearer.id) {
+      const bill = bearer.assets.billsOfExchange.find(
+        (b: Bill) => b.id === presentedBill.id
+      );
+      if (bill) {
+        bearer.assets.billsOfExchange =
+          exchangeBank.assets.billsOfExchange.filter(
+            (b: Bill) => b.id !== presentedBill.id
+          );
+
+        exchangeBank.assets.billsOfExchange = [
+          ...exchangeBank.assets.billsOfExchange,
+          bill,
+        ];
+        ExchangeBankService.makeExchange(bearer, exchangeBank, bill);
+      }
+    }
+  }
+
+  static makeExchange(bearer: Trader, exchangeBank: ExchangeBank, bill: Bill) {
+    const cityQuotesCertain: boolean = certaintyQuotes[exchangeBank.city];
+    if (cityQuotesCertain) {
+      exchangeBank.exchangeUnit -= bill.amount;
+      bearer.reserves += bill.amount * exchangeRates[exchangeBank.city];
+    } else {
+      exchangeBank.reserves -= bill.amount * exchangeRates[bill.city];
+      bearer.reserves += bill.amount * exchangeRates[bill.city];
+    }
+  }
+
+  static remitBill(
+    presenter: ExchangeBank,
+    presentee: ExchangeBank,
+    presentedBill: Bill
+  ) {
+    const bill = presenter.assets.billsOfExchange.find(
+      (b: Bill) => b.id === presentedBill.id
+    );
+
+    if (bill) {
+      presenter.assets.billsOfExchange =
+        presenter.assets.billsOfExchange.filter(
+          (b: Bill) => b.id !== presentedBill.id
+        );
+      presentee.assets.billsOfExchange = [
+        ...presentee.assets.billsOfExchange,
+        bill,
+      ];
+    }
+  }
+
+  static presentBill(exchangeBank: ExchangeBank, payee: Trader, presentedBill: Bill) {
+    const bill = exchangeBank.assets.find((b: Bill) => b.id === presentedBill.id);
+    if (presentedBill.dueFrom === payee.id) {
+      exchangeBank.assets = exchangeBank.assets.filter(
+        (b: Bill) => b.id !== presentedBill.id
+      );
+      payee.liabilities = payee.liabilities.filter(
+        (b: Bill) => b.id !== presentedBill.id
+      );
+      const cityQuotesCertain = certaintyQuotes[exchangeBank.city];
+      if (cityQuotesCertain) {
+        exchangeBank.exchangeUnit += bill.amount;
+        payee.reserves -= bill.amount * exchangeRates[exchangeBank.city];
+      } else {
+        exchangeBank.reserves += bill.amount * exchangeRates[bill.city];
+        payee.reserves -= bill.amount * exchangeRates[bill.city];
+      }
+    }
+  }
+}
+
+export class TradeService {
+  static trade(importer: Trader, exporter: Trader, amount: number) {
+    importer.goods += amount;
+    exporter.goods -= amount;
   }
 }
